@@ -278,11 +278,11 @@ tr:last-child td{border-bottom:0}
   .pn-t{font-size:1.6rem}
 }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/supabase.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SUPA_URL='https://sxrxoeiloupbyjedlbpd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnhvZWlsb3VwYnlqZWRsYnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTM4NTAsImV4cCI6MjA5NTAyOTg1MH0.hCKkwO_SJ5KW6PrZytVwxnuoWXKbGaUD4u_nI8cgFdM';
-const supabase=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
 </script>
 </head>
 <body>
@@ -1449,7 +1449,7 @@ async function doLogin(){
   const errEl=document.getElementById('authError');
   errEl.style.display='none';
   if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
-  const{data,error}=await supabase.auth.signInWithPassword({email,password:pass});
+  const{data,error}=await supa.auth.signInWithPassword({email,password:pass});
   if(error){errEl.textContent=error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message;errEl.style.display='block';return}
   enterApp();
 }
@@ -1462,7 +1462,7 @@ async function doRegister(){
   errEl.style.display='none';okEl.style.display='none';
   if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
   if(pass.length<6){errEl.textContent='A senha precisa ter pelo menos 6 caracteres.';errEl.style.display='block';return}
-  const{data,error}=await supabase.auth.signUp({email,password:pass});
+  const{data,error}=await supa.auth.signUp({email,password:pass});
   if(error){errEl.textContent=error.message;errEl.style.display='block';return}
   okEl.textContent='Conta criada! Verifique seu email para confirmar, depois faca login.';okEl.style.display='block';
   setTimeout(()=>showLogin(),3000);
@@ -1474,14 +1474,14 @@ function enterApp(){
 }
 
 async function doLogout(){
-  await supabase.auth.signOut();
+  await supa.auth.signOut();
   document.getElementById('appContainer').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('authPass').value='';
 }
 
 // Check if already logged in
-supabase.auth.getSession().then(({data})=>{
+supa.auth.getSession().then(({data})=>{
   if(data.session)enterApp();
 });
 
