@@ -282,7 +282,8 @@ tr:last-child td{border-bottom:0}
 <script>
 const SUPA_URL='https://sxrxoeiloupbyjedlbpd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnhvZWlsb3VwYnlqZWRsYnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTM4NTAsImV4cCI6MjA5NTAyOTg1MH0.hCKkwO_SJ5KW6PrZytVwxnuoWXKbGaUD4u_nI8cgFdM';
-const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+// Não manter o login salvo no navegador: ao abrir/recarregar, pedir email e senha novamente.
+const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
 // Deixe false para que somente contas criadas no painel do Supabase possam entrar.
 const ALLOW_PUBLIC_SIGNUP=false;
 </script>
