@@ -283,6 +283,8 @@ tr:last-child td{border-bottom:0}
 const SUPA_URL='https://sxrxoeiloupbyjedlbpd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnhvZWlsb3VwYnlqZWRsYnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTM4NTAsImV4cCI6MjA5NTAyOTg1MH0.hCKkwO_SJ5KW6PrZytVwxnuoWXKbGaUD4u_nI8cgFdM';
 const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+// Deixe false para que somente contas criadas no painel do Supabase possam entrar.
+const ALLOW_PUBLIC_SIGNUP=false;
 </script>
 </head>
 <body>
@@ -305,7 +307,7 @@ const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY);
         <div id="authError" style="margin-top:10px;font-size:.82rem;color:#ef4444;text-align:center;display:none"></div>
         <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
           <span style="font-size:.82rem;color:var(--tx3)">Primeiro acesso?</span>
-          <a href="#" onclick="showRegister();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none;margin-left:4px">Criar conta</a>
+          <a href="#" id="registerLink" onclick="showRegister();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none;margin-left:4px">Criar conta</a>
         </div>
       </div>
       <div id="registerForm" style="display:none">
@@ -1228,31 +1230,53 @@ initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();
 
 <script>
 // AUTH
-function showRegister(){document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='block'}
-function showLogin(){document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block'}
+function authError(message){
+  const el=document.getElementById('authError');
+  el.textContent=message;
+  el.style.display='block';
+}
+function setAuthBusy(busy){
+  document.querySelectorAll('#loginForm button,#registerForm button').forEach(btn=>{
+    btn.disabled=busy;
+    btn.style.opacity=busy?'.65':'1';
+  });
+}
+function showRegister(){
+  if(!ALLOW_PUBLIC_SIGNUP){authError('O cadastro está fechado. Peça ao administrador para criar seu acesso.');return}
+  document.getElementById('loginForm').style.display='none';
+  document.getElementById('registerForm').style.display='block';
+}
+function showLogin(){
+  document.getElementById('registerForm').style.display='none';
+  document.getElementById('loginForm').style.display='block';
+}
 
 async function doLogin(){
-  const email=document.getElementById('authEmail').value.trim();
+  const email=document.getElementById('authEmail').value.trim().toLowerCase();
   const pass=document.getElementById('authPass').value;
-  const errEl=document.getElementById('authError');
-  errEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
-  const{data,error}=await supa.auth.signInWithPassword({email,password:pass});
-  if(error){errEl.textContent=error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message;errEl.style.display='block';return}
-  enterApp();
+  document.getElementById('authError').style.display='none';
+  if(!email||!pass){authError('Preencha email e senha.');return}
+  setAuthBusy(true);
+  const{error}=await supa.auth.signInWithPassword({email,password:pass});
+  setAuthBusy(false);
+  if(error){authError(error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message);return}
+  // O listener de sessão abaixo libera a aplicação após o login ser confirmado.
 }
 
 async function doRegister(){
-  const email=document.getElementById('regEmail').value.trim();
+  if(!ALLOW_PUBLIC_SIGNUP){showLogin();authError('O cadastro está fechado. Peça ao administrador para criar seu acesso.');return}
+  const email=document.getElementById('regEmail').value.trim().toLowerCase();
   const pass=document.getElementById('regPass').value;
   const errEl=document.getElementById('regError');
   const okEl=document.getElementById('regSuccess');
   errEl.style.display='none';okEl.style.display='none';
   if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
   if(pass.length<6){errEl.textContent='A senha precisa ter pelo menos 6 caracteres.';errEl.style.display='block';return}
-  const{data,error}=await supa.auth.signUp({email,password:pass});
+  setAuthBusy(true);
+  const{error}=await supa.auth.signUp({email,password:pass});
+  setAuthBusy(false);
   if(error){errEl.textContent=error.message;errEl.style.display='block';return}
-  okEl.textContent='Conta criada! Verifique seu email para confirmar, depois faca login.';okEl.style.display='block';
+  okEl.textContent='Conta criada! Verifique seu email para confirmar, depois faça login.';okEl.style.display='block';
   setTimeout(()=>showLogin(),3000);
 }
 
@@ -1260,21 +1284,29 @@ function enterApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appContainer').style.display='block';
 }
-
-async function doLogout(){
-  await supa.auth.signOut();
+function leaveApp(){
   document.getElementById('appContainer').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
   document.getElementById('authPass').value='';
 }
+async function doLogout(){
+  const{error}=await supa.auth.signOut();
+  if(error)authError('Não foi possível sair. Tente novamente.');
+}
 
-// Check if already logged in
-supa.auth.getSession().then(({data})=>{
-  if(data.session)enterApp();
+// Mantém a interface bloqueada se a sessão expirar ou for encerrada em outra aba.
+supa.auth.onAuthStateChange((_event,session)=>{
+  if(session)enterApp(); else leaveApp();
+});
+supa.auth.getSession().then(({data,error})=>{
+  if(error)authError('Não foi possível validar a sessão. Recarregue a página.');
+  else if(data.session)enterApp();
 });
 
 // Add logout button to header
 document.addEventListener('DOMContentLoaded',()=>{
+  const link=document.getElementById('registerLink');
+  if(link&&!ALLOW_PUBLIC_SIGNUP){link.style.display='none';link.previousElementSibling.style.display='none'}
   const hdr=document.querySelector('.header-inner');
   if(hdr){
     const logoutBtn=document.createElement('button');
