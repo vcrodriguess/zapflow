@@ -344,10 +344,10 @@ tr:last-child td{border-bottom:0}
   <h2 class="pn-t">Conexão</h2><p class="pn-d">Clique em <strong>Testar conexão</strong> para conferir se o WhatsApp está ligado. Se der erro, abra o Docker Desktop, espere ele iniciar e tente de novo.</p>
   <div class="act-grid"><button class="btn btn-pri" onclick="testApi()">Testar conexão</button></div>
   <div id="apiResult" class="mt"></div>
-  <details class="adv">
-    <summary>Ajustes de conexão (normalmente não precisa mexer)</summary>
-    <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl"></div><div><label>Nome da instância</label><input type="text" id="apiInstance"></div></div>
-    <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey"></div>
+  <details class="adv" open>
+    <summary>Ajustes de conexão</summary>
+    <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl" value="https://sacrifice-tested-options-continue.trycloudflare.com"></div><div><label>Nome da instância</label><input type="text" id="apiInstance" value="senar"></div></div>
+    <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey" value="SuaSenhaForteAqui123"></div>
   </details>
   <div class="card mt" style="background:var(--sf)">
     <div class="card-t" style="font-size:.9rem">Rastreamento de cliques</div>
@@ -508,7 +508,7 @@ let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,l
 // STORAGE
 function saveHist(s,e){try{let h=JSON.parse(localStorage.getItem('zf_h')||'[]');const cid=String(activeCampId||'legacy');h.unshift({d:new Date().toLocaleDateString('pt-BR'),t:new Date().toLocaleTimeString('pt-BR'),s,e,sid,campId:activeCampId});if(h.length>50)h=h.slice(0,50);localStorage.setItem('zf_h',JSON.stringify(h));let st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');st.s+=s;st.e+=e;st.n++;st.byCamp=st.byCamp||{};st.byCamp[cid]=st.byCamp[cid]||{s:0,e:0,n:0};st.byCamp[cid].s+=s;st.byCamp[cid].e+=e;st.byCamp[cid].n++;localStorage.setItem('zf_st',JSON.stringify(st));let dy=JSON.parse(localStorage.getItem('zf_dy')||'{}');const td=new Date().toLocaleDateString('pt-BR');dy[td]=(dy[td]||0)+s;localStorage.setItem('zf_dy',JSON.stringify(dy))}catch(x){}}
 function saveCfg(){try{localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value}));toast('Salvo!')}catch(x){}}
-function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u||'https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value=c.i||'senar';document.getElementById('apiKey').value=c.k||'SuaSenhaForteAqui123'}else{document.getElementById('apiUrl').value='https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value='senar';document.getElementById('apiKey').value='SuaSenhaForteAqui123'}}catch(x){document.getElementById('apiUrl').value='https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value='senar';document.getElementById('apiKey').value='SuaSenhaForteAqui123'}}
+function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){if(c.u)document.getElementById('apiUrl').value=c.u;if(c.i)document.getElementById('apiInstance').value=c.i;if(c.k)document.getElementById('apiKey').value=c.k}}catch(x){}}
 function loadDash(){try{
   const st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');
   document.getElementById('dSent').textContent=st.s;document.getElementById('dErr').textContent=st.e;document.getElementById('dSess').textContent=st.n;
@@ -1387,7 +1387,7 @@ function initSched(){
 }
 
 setWaStatus(false,'');
-initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();loadDash();refreshUI();checkConn();initSched();
+initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();saveCfg();loadDash();refreshUI();checkConn();initSched();
 </script>
 </body>
 </html>
