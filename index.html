@@ -278,61 +278,8 @@ tr:last-child td{border-bottom:0}
   .pn-t{font-size:1.6rem}
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script>
-const SUPA_URL='https://sxrxoeiloupbyjedlbpd.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnhvZWlsb3VwYnlqZWRsYnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTM4NTAsImV4cCI6MjA5NTAyOTg1MH0.hCKkwO_SJ5KW6PrZytVwxnuoWXKbGaUD4u_nI8cgFdM';
-// Não manter o login salvo no navegador: ao abrir/recarregar, pedir email e senha novamente.
-const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
-const PROXY_URL='https://doug-adds-cash-para.trycloudflare.com';
-// Deixe false para que somente contas criadas no painel do Supabase possam entrar.
-const ALLOW_PUBLIC_SIGNUP=false;
-// Usuário exclusivo autorizado a usar este ZapFlow.
-const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
-</script>
 </head>
 <body>
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
-  <div style="width:100%;max-width:380px">
-    <div style="text-align:center;margin-bottom:32px">
-      <div style="width:56px;height:56px;background:var(--pri);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#fff;font-size:1.4rem;font-weight:800">Z</div>
-      <h1 style="font-size:1.4rem;font-weight:800;color:var(--tx)">ZapFlow</h1>
-      <p style="font-size:.84rem;color:var(--tx3);margin-top:4px">Disparador de mensagens</p>
-    </div>
-    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.06)">
-      <div id="loginForm">
-        <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;text-align:center">Entrar</h2>
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Email</label>
-        <input type="email" id="authEmail" placeholder="seu@email.com" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:12px">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Senha</label>
-        <input type="password" id="authPass" placeholder="Sua senha" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:16px" onkeydown="if(event.key==='Enter')doLogin()">
-        <button onclick="doLogin()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pri);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s">Entrar</button>
-        <div id="authError" style="margin-top:10px;font-size:.82rem;color:#ef4444;text-align:center;display:none"></div>
-        <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
-          <span style="font-size:.82rem;color:var(--tx3)">Primeiro acesso?</span>
-          <a href="#" id="registerLink" onclick="showRegister();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none;margin-left:4px">Criar conta</a>
-        </div>
-      </div>
-      <div id="registerForm" style="display:none">
-        <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;text-align:center">Criar conta</h2>
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Email</label>
-        <input type="email" id="regEmail" placeholder="seu@email.com" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:12px">
-        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Senha (minimo 6 caracteres)</label>
-        <input type="password" id="regPass" placeholder="Crie uma senha forte" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:16px">
-        <button onclick="doRegister()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pri);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">Criar conta</button>
-        <div id="regError" style="margin-top:10px;font-size:.82rem;color:#ef4444;text-align:center;display:none"></div>
-        <div id="regSuccess" style="margin-top:10px;font-size:.82rem;color:#22c55e;text-align:center;display:none"></div>
-        <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
-          <a href="#" onclick="showLogin();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none">Voltar para login</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- APP (hidden until login) -->
-<div id="appContainer" style="display:none">
 <div class="app">
 <aside class="side">
   <div class="logo"><div class="logo-box" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M21.5 3 2.5 10.4l6.1 2.5 2.7 7.6 3.3-4.6 4.6 3.3z" fill="currentColor"/><path d="M8.6 12.9 21.5 3" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg></div><div><h1>ZapFlow</h1><p>Disparador de mensagens</p></div></div>
@@ -359,6 +306,7 @@ const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
   <div class="stat-grid">
     <div class="stat-box"><div class="stat-n g" id="dSent">0</div><div class="stat-l">Enviados</div></div>
     <div class="stat-box"><div class="stat-n b" id="dDel">0</div><div class="stat-l">Entregues</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:#f97316" id="dClick">0</div><div class="stat-l">Clicaram</div></div>
     <div class="stat-box"><div class="stat-n r" id="dErr">0</div><div class="stat-l">Erros</div></div>
     <div class="stat-box"><div class="stat-n a" id="dSess">0</div><div class="stat-l" title="Cada conclusão ou rodada registrada do envio">Rodadas</div></div>
   </div>
@@ -396,7 +344,22 @@ const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
   <h2 class="pn-t">Conexão</h2><p class="pn-d">Clique em <strong>Testar conexão</strong> para conferir se o WhatsApp está ligado. Se der erro, abra o Docker Desktop, espere ele iniciar e tente de novo.</p>
   <div class="act-grid"><button class="btn btn-pri" onclick="testApi()">Testar conexão</button></div>
   <div id="apiResult" class="mt"></div>
-  <div class="hint mt">A conexão é feita por um servidor intermediário protegido. As credenciais da Evolution API não ficam neste navegador.</div>
+  <details class="adv">
+    <summary>Ajustes de conexão (normalmente não precisa mexer)</summary>
+    <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl"></div><div><label>Nome da instância</label><input type="text" id="apiInstance"></div></div>
+    <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey"></div>
+  </details>
+  <div class="card mt" style="background:var(--sf)">
+    <div class="card-t" style="font-size:.9rem">Rastreamento de cliques</div>
+    <div class="card-d">O ZapFlow cria um link curto para cada pessoa e mostra no relatório quem abriu a pesquisa e a cidade aproximada do clique. Isso confirma a abertura do link, não a conclusão do formulário.</div>
+    <div class="row"><div><label>Chave PÚBLICA do Short.io</label><input type="password" id="shortKey"></div><div><label>Domínio do Short.io</label><input type="text" id="shortDomain"></div></div>
+    <div class="mt"><label>Endereço do proxy de cliques</label><input type="text" id="shortProxy"><div class="hint">O proxy consulta o Short.io usando a chave secreta sem expô-la nesta página. Ele precisa estar ativo para o botão “Atualizar informações” funcionar.</div></div>
+    <button class="btn btn-out btn-sm mt" onclick="testShort()">Testar Short.io</button>
+    <div id="shortResult" class="mt"></div>
+    <details class="adv"><summary>Detalhes técnicos</summary><div class="hint">Aqui vai a chave PÚBLICA (pk_...). Para contar os cliques no relatório, a chave secreta fica no proxy local (pasta shortio-proxy, porta 8081), nunca neste arquivo.</div></details>
+  </div>
+  <div class="act-grid mt"><button class="btn btn-out" onclick="saveCfg()">Salvar configuração</button></div>
+  <div class="hint">As alterações nestes campos são salvas automaticamente.</div>
 </div>
 
 <!-- CONTACTS -->
@@ -503,6 +466,7 @@ const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
   <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat-box"><div class="stat-n g" id="rS">0</div><div class="stat-l">Enviados</div></div>
     <div class="stat-box"><div class="stat-n b" id="rD">0</div><div class="stat-l">Entregues</div></div>
+    <div class="stat-box"><div class="stat-n" style="color:#f97316" id="rCl">0</div><div class="stat-l">Clicaram</div></div>
     <div class="stat-box"><div class="stat-n r" id="rE">0</div><div class="stat-l">Erros</div></div>
     <div class="stat-box"><div class="stat-n gr" id="rP">0</div><div class="stat-l">Pendentes</div></div>
   </div>
@@ -510,10 +474,11 @@ const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
     <button class="filter-btn on" onclick="filterRpt('all',this)">Todos</button>
     <button class="filter-btn" onclick="filterRpt('sent',this)">Enviados</button>
     <button class="filter-btn" onclick="filterRpt('delivered',this)">Entregues</button>
+    <button class="filter-btn" onclick="filterRpt('clicked',this)">Clicaram</button>
     <button class="filter-btn" onclick="filterRpt('error',this)">Erros</button>
     <button class="filter-btn" onclick="filterRpt('pending',this)">Pendentes</button>
   </div>
-  <div class="tbl-w" style="max-height:300px"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Status</th><th>Hora</th><th>Detalhe</th></tr></thead><tbody id="rb"></tbody></table></div>
+  <div class="tbl-w" style="max-height:300px"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Status</th><th>Cliques</th><th>Hora</th><th>Detalhe</th></tr></thead><tbody id="rb"></tbody></table></div>
 </div>
 
 </main>
@@ -536,14 +501,14 @@ corp:"Olá, {nome}. Tudo bem?\n\nIdentificamos sua participação no curso {curs
 emoji:"Olá, {nome}! Tudo bem? \ud83d\ude0a\n\nVi que você participou do curso {curso}, realizado pelo Senar-AR/ES, protocolo nº {protocolo}, e passei aqui para fazer um convite especial. \ud83c\udf3e\n\nEstamos realizando a Pesquisa de Qualidade e Satisfação 2026 e gostaríamos muito de contar com a sua participação!\n\nQueremos saber como foi sua experiência no curso e ouvir a sua opinião. Sua resposta é muito importante para nós. \ud83d\udc9a\n\n\ud83d\udd17 Para participar:\n{link}\n\nÉ rapidinho! \ud83d\ude0a\n\nSe tiver dificuldade, pode falar comigo por aqui.\n\nMuito obrigada! \ud83c\udf3e\ud83d\udc9a",
 custom:""
 };
-const ST={pending:'Pendente',sent:'Enviado',delivered:'Entregue',read:'Lido',error:'Erro',skipped:'Pulado'};
-const BADGE={pending:'badge-pending',sent:'badge-sent',delivered:'badge-delivered',read:'badge-read',error:'badge-error',skipped:'badge-skipped'};
+const ST={pending:'Pendente',sent:'Enviado',delivered:'Entregue',read:'Lido',clicked:'Clicou',error:'Erro',skipped:'Pulado'};
+const BADGE={pending:'badge-pending',sent:'badge-sent',delivered:'badge-delivered',read:'badge-read',clicked:'badge-read',error:'badge-error',skipped:'badge-skipped'};
 let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,logCl=false,imageB64=null,imageMime=null,imageName='',curFilter='all',statusInterval=null,sid=null,viewObj=null;
 
 // STORAGE
 function saveHist(s,e){try{let h=JSON.parse(localStorage.getItem('zf_h')||'[]');const cid=String(activeCampId||'legacy');h.unshift({d:new Date().toLocaleDateString('pt-BR'),t:new Date().toLocaleTimeString('pt-BR'),s,e,sid,campId:activeCampId});if(h.length>50)h=h.slice(0,50);localStorage.setItem('zf_h',JSON.stringify(h));let st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');st.s+=s;st.e+=e;st.n++;st.byCamp=st.byCamp||{};st.byCamp[cid]=st.byCamp[cid]||{s:0,e:0,n:0};st.byCamp[cid].s+=s;st.byCamp[cid].e+=e;st.byCamp[cid].n++;localStorage.setItem('zf_st',JSON.stringify(st));let dy=JSON.parse(localStorage.getItem('zf_dy')||'{}');const td=new Date().toLocaleDateString('pt-BR');dy[td]=(dy[td]||0)+s;localStorage.setItem('zf_dy',JSON.stringify(dy))}catch(x){}}
-function saveCfg(){toast('A conexão é gerenciada com segurança pelo proxy local')}
-function loadCfg(){try{localStorage.removeItem('zf_cfg')}catch(x){}}
+function saveCfg(){try{localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value}));toast('Salvo!')}catch(x){}}
+function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u||'https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value=c.i||'senar';document.getElementById('apiKey').value=c.k||'SuaSenhaForteAqui123'}else{document.getElementById('apiUrl').value='https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value='senar';document.getElementById('apiKey').value='SuaSenhaForteAqui123'}}catch(x){document.getElementById('apiUrl').value='https://parallel-promising-techno-pockets.trycloudflare.com';document.getElementById('apiInstance').value='senar';document.getElementById('apiKey').value='SuaSenhaForteAqui123'}}
 function loadDash(){try{
   const st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');
   document.getElementById('dSent').textContent=st.s;document.getElementById('dErr').textContent=st.e;document.getElementById('dSess').textContent=st.n;
@@ -559,25 +524,11 @@ function loadDash(){try{
 // TABS
 function go(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));const page=document.getElementById('p-'+n);if(!page)return;document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));page.classList.add('on');const tab=[...document.querySelectorAll('.nav-tab')].find(t=>(t.getAttribute('onclick')||'').includes("go('"+n+"')"));if(tab)tab.classList.add('on');if(n==='dash')loadDash();if(n==='camp')renderCampaigns();if(n==='rpt')renderRpt()}
 
-// API: a chave da Evolution nunca sai do proxy local.
-async function api(ep,method='GET',body=null){
-  const actions={
-    '/instance/connectionState/{i}':'status',
-    '/message/sendText/{i}':'sendText',
-    '/message/sendMedia/{i}':'sendMedia',
-    '/chat/findMessages/{i}':'findMessages'
-  };
-  const action=actions[ep]||ep;
-  const{data,error}=await supa.auth.getSession();
-  if(error||!data.session){leaveApp();throw new Error('Sessão expirada. Faça login novamente.')}
-  const r=await fetch(PROXY_URL+'/api/whatsapp',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+data.session.access_token},body:JSON.stringify({action,payload:body})});
-  const result=await r.json();
-  if(!r.ok)throw new Error(result.error||'Erro no proxy de envio');
-  return result;
-}
+// API
+async function api(ep,method='GET',body=null){const u=document.getElementById('apiUrl').value,k=document.getElementById('apiKey').value,i=document.getElementById('apiInstance').value;const o={method,headers:{'apikey':k,'Content-Type':'application/json'}};if(body)o.body=JSON.stringify(body);return(await fetch(u+ep.replace('{i}',i),o)).json()}
 async function testApi(){const el=document.getElementById('apiResult');el.innerHTML='<div class="info-b">Testando...</div>';try{const r=await api('/instance/connectionState/{i}');if(r.instance&&r.instance.state==='open'){el.innerHTML='<div class="info-b ok"><strong>Conectado!</strong> WhatsApp ativo.</div>';document.getElementById('apiDot').className='hdr-dot on';document.getElementById('apiLbl').textContent='Conectado'}else el.innerHTML='<div class="info-b er">WhatsApp não conectado. Status: '+(r.instance?.state||JSON.stringify(r))+'</div>'}catch(e){el.innerHTML='<div class="info-b er">Erro: '+e.message+'</div>'}}
 function rawB64(){return imageB64?imageB64.replace(/^data:[^;]+;base64,/,''):null}
-async function sendMsg(phone,text){if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,fileName:imageName||'banner',caption:text,media:rawB64()})}return api('/message/sendText/{i}','POST',{number:phone,text})}
+async function sendMsg(phone,text){if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,caption:text,media:rawB64()})}return api('/message/sendText/{i}','POST',{number:phone,text})}
 
 // STATUS TRACKING
 async function refreshStatus(){
@@ -648,21 +599,185 @@ function pauseSending(){paused=!paused;document.getElementById('pauseBtn').textC
 function stopSending(){sending=false;paused=false;clearInterval(tmInt);document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');addLog('Parado','w');showCur()}
 function retryErrors(){const errs=contacts.filter(c=>c.status==='error');if(!errs.length){toast('Sem erros para reenviar');return}errs.forEach(c=>{c.status='pending';c.detail='';c.time='';c.msgId=null});idx=0;sesSent=0;errors=0;document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');go('send');showCur();toast(errs.length+' contatos prontos para reenvio');addLog(errs.length+' erros marcados para reenvio','w')}
 function resetSess(){sesSent=0;errors=0;contacts.forEach(c=>{if(c.status!=='sent'&&c.status!=='delivered'&&c.status!=='read')c.status='pending'});idx=0;document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');go('send');showCur()}
-function updProg(){const sent=contacts.filter(x=>x.status==='sent'||x.status==='delivered'||x.status==='read').length;const err=contacts.filter(x=>x.status==='error').length;const del=contacts.filter(x=>x.status==='delivered').length;const rd=contacts.filter(x=>x.status==='read').length;const pct=contacts.length?((sent+err)/contacts.length)*100:0;const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};const bar=document.getElementById('pf');if(bar)bar.style.width=pct+'%';set('ns',sent);set('nd',del);set('nr',rd);set('ne',err);set('ss',sesSent)}
+function updProg(){const sent=contacts.filter(x=>x.status==='sent'||x.status==='delivered'||x.status==='read').length;const err=contacts.filter(x=>x.status==='error').length;const pend=contacts.filter(x=>x.status==='pending').length;const del=contacts.filter(x=>x.status==='delivered').length;const rd=contacts.filter(x=>x.status==='read').length;const pct=contacts.length?((sent+err)/contacts.length)*100:0;document.getElementById('pf').style.width=pct+'%';document.getElementById('ns').textContent=sent;document.getElementById('nd').textContent=del;document.getElementById('nr').textContent=rd;document.getElementById('ne').textContent=err;document.getElementById('ss').textContent=sesSent}
 function now(){return new Date().toLocaleTimeString('pt-BR')}
 function addLog(msg,t=''){if(!logCl){document.getElementById('lg').innerHTML='';logCl=true}const d=document.createElement('div');d.className='log-e '+(t||'');d.textContent='['+now()+'] '+msg;document.getElementById('lg').prepend(d)}
 
+// REPORT
+function renderRpt(){
+  const s=contacts.filter(x=>x.status==='sent').length,d=contacts.filter(x=>x.status==='delivered').length,r=contacts.filter(x=>x.status==='read').length,e=contacts.filter(x=>x.status==='error').length,p=contacts.filter(x=>x.status==='pending').length;
+  document.getElementById('rS').textContent=s;document.getElementById('rD').textContent=d;document.getElementById('rE').textContent=e;document.getElementById('rP').textContent=p;
+  filterRpt(curFilter);
+}
+function filterRpt(f,el){
+  curFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));
+  if(el)el.classList.add('on');else document.querySelector('.filter-btn').classList.add('on');
+  const list=f==='all'?contacts:contacts.filter(x=>x.status===f);
+  document.getElementById('rb').innerHTML=list.map(c=>'<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.telefone)+'</td><td><span class="badge '+BADGE[c.status]+'">'+ST[c.status]+'</span></td><td style="font-size:.8rem;text-align:center">'+(clickLinkId(c)?String(Number(c.clicks)||0):'—')+'</td><td style="font-size:.74rem">'+(c.time||'—')+'</td><td style="font-size:.72rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.detail||'—')+'</td></tr>').join('');
+}
+function exportCSV(){let csv='Nome;Telefone;Curso;Protocolo;Status;Hora;Detalhe;Link curto\n';contacts.forEach(c=>{csv+=c.nome+';'+c.telefone+';'+c.curso+';'+c.protocolo+';'+ST[c.status]+';'+(c.time||'')+';'+(c.detail||'')+';'+(c.shortUrl||'')+'\n'});const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='zapflow_'+new Date().toISOString().slice(0,10)+'.csv';a.click()}
 function toast(msg,type=''){const t=document.createElement('div');t.className='toast'+(type?' '+type:'');t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500+Math.min(msg.length*35,4500))}
+
+// SHORT.IO (chave pública + POST /links/public: único método liberado para uso no navegador)
+async function createShortLink(originalUrl, title){
+  const key=document.getElementById('shortKey').value.trim();
+  const domain=document.getElementById('shortDomain').value.trim();
+  if(!key||!domain)return {error:'Chave pública ou domínio não preenchidos'};
+  if(key.startsWith('sk_'))return {error:'Essa é uma chave secreta. Use a chave PÚBLICA (pk_...)'};
+  try{
+    const r=await fetch('https://api.short.io/links/public',{method:'POST',headers:{'Authorization':key,'Content-Type':'application/json'},body:JSON.stringify({domain,originalURL:originalUrl,title})});
+    const d=await r.json().catch(()=>({}));
+    const url=d.secureShortURL||d.shortURL;
+    if(r.ok&&url)return {url,id:d.idString||d.id||null};
+    return {error:'Short.io respondeu '+r.status+(d.error||d.message?' — '+(d.error||d.message):'')};
+  }catch(e){return {error:e.message}}
+}
+
+// Cliques: lidos pelo proxy local (Docker), que guarda a chave secreta.
+// A URL pode ser alterada na tela Conexão para funcionar também fora de localhost.
+const DEFAULT_SHORT_PROXY='http://localhost:8081/shortio';
+function shortProxyUrl(){return (byId('shortProxy')?.value.trim()||DEFAULT_SHORT_PROXY).replace(/\/+$/,'')}
+function numOrZero(v){const n=Number(v);return Number.isFinite(n)?n:0}
+function firstPlace(v,kind){
+  const valid=y=>y&&((kind==='city'&&(y.name||y.city||y.cityName))||(kind==='country'&&(y.countryName||y.country||y.name||y.countryCode)));
+  if(Array.isArray(v))return v.find(valid)||null;
+  if(valid(v))return v;
+  if(typeof v==='string'&&v.trim())return kind==='city'?{name:v.trim()}:{countryName:v.trim()};
+  return null;
+}
+function datasetClickTotal(v){
+  if(!Array.isArray(v))return 0;
+  return v.reduce((sum,set)=>sum+(Array.isArray(set?.data)?set.data.reduce((n,p)=>n+numOrZero(p?.y??p?.value??p?.clicks),0):0),0);
+}
+function normalizeClickStats(d){
+  const rows=Array.isArray(d)?d:(Array.isArray(d?.clicks)?d.clicks:(Array.isArray(d?.data)?d.data:(Array.isArray(d?.lastClicks)?d.lastClicks:[])));
+  const humanRows=rows.filter(x=>x&&(x.human===true||x.isHuman===true));
+  const placeRows=humanRows.length?humanRows:rows;
+  const city=firstPlace(d?.city,'city')||firstPlace(d?.cities,'city')||firstPlace(d?.locations?.cities,'city')||firstPlace(placeRows.map(x=>x.city).find(Boolean),'city');
+  const country=firstPlace(d?.country,'country')||firstPlace(d?.countries,'country')||firstPlace(d?.locations?.countries,'country')||firstPlace(placeRows.map(x=>x.country).find(Boolean),'country');
+  const dsTotal=datasetClickTotal(d?.datasets)||datasetClickTotal(d?.clickStatistics?.datasets)||datasetClickTotal(d?.clicks?.datasets);
+  const human=d?.humanClicks!=null?numOrZero(d.humanClicks):d?.human!=null&&typeof d.human!=='object'?numOrZero(d.human):(rows.length?(humanRows.length||rows.length):0);
+  const total=d?.totalClicks!=null?numOrZero(d.totalClicks):(typeof d?.clicks==='number'?numOrZero(d.clicks):rows.length||dsTotal);
+  const cc=city?.countryCode||placeRows.find(x=>x&&x.countryCode)?.countryCode||country?.countryCode||country?.country||'';
+  return{human,total,city:city?.name||city?.city||city?.cityName||'',cc,country:country?.countryName||country?.country||country?.name||''};
+}
+async function getClickStats(linkId){
+  let r;
+  const base=shortProxyUrl();
+  if(!base)throw new Error('informe o endereço do proxy de cliques');
+  try{r=await fetch(base+'/statistics/link/'+encodeURIComponent(linkId)+'?period=total&tz='+encodeURIComponent('America/Sao_Paulo'))}
+  catch(e){throw new Error('não consegui falar com o proxy de cliques. Ele está rodando no Docker?')}
+  if(!r.ok){
+    const why=r.status===401||r.status===403?'o Short.io recusou a chave secreta (confira o shortio-proxy.conf)':r.status===404?'o proxy não encontrou este link ou o caminho configurado está errado':r.status===400?'o Short.io recusou o pedido':'erro no proxy ou no Short.io';
+    throw new Error(why+' (código '+r.status+')');
+  }
+  return normalizeClickStats(await r.json());
+}
+
+async function testShort(){
+  const el=document.getElementById('shortResult');
+  el.innerHTML='<div class="info-b">Testando...</div>';
+  const key=document.getElementById('shortKey').value.trim();
+  const domain=document.getElementById('shortDomain').value.trim();
+  if(!key||!domain){el.innerHTML='<div class="info-b er">Preencha a chave pública e o domínio do Short.io</div>';return}
+  const lnkEl=document.getElementById('lnk');
+  const alvo=(lnkEl&&/^https?:\/\//.test(lnkEl.value.trim()))?lnkEl.value.trim():'https://example.com';
+  const sl=await createShortLink(alvo,'ZapFlow - teste');
+  if(!sl.url){el.innerHTML='<div class="info-b er">Erro ao criar link: '+sl.error+'</div>';return}
+  let msg='<div class="info-b ok"><strong>Criação de links OK.</strong> Link de teste: '+sl.url+'</div>';
+  try{
+    if(!sl.id)throw new Error('o Short.io não devolveu o ID do link');
+    const st=await getClickStats(sl.id);
+    msg+='<div class="info-b ok" style="margin-top:6px"><strong>Leitura de cliques OK.</strong> Cliques registrados no link de teste: '+Math.max(numOrZero(st.human),numOrZero(st.total))+'.</div>';
+  }catch(e){
+    msg+='<div class="info-b er" style="margin-top:6px">Leitura de cliques falhou: '+esc(e.message)+'.</div>';
+  }
+  el.innerHTML=msg;
+}
+
+async function refreshClicks(){
+  const comLink=contacts.filter(c=>c.shortId);
+  if(!comLink.length){toast('Nenhum contato com link curto neste envio');return}
+  let updated=0,falhas=0;
+  for(const c of comLink){
+    try{
+      const stats=await getClickStats(c.shortId);
+      const clicks=Math.max(numOrZero(stats.human),numOrZero(stats.total));
+      c.clicks=clicks;
+      c.clickStats={human:numOrZero(stats.human),total:numOrZero(stats.total),city:'',country:''};
+      if(clicks>0&&c.status!=='error'){
+        if(c.status!=='clicked')updated++;
+        c.status='clicked';
+        c.detail='Clicou '+clicks+'x no link';
+      }
+    }catch(e){falhas++}
+  }
+  renderRpt();
+  if(falhas===comLink.length)toast('Não consegui ler os cliques. O proxy (porta 8081) está rodando?','err');
+  else if(updated>0)toast(updated+' cliques detectados');
+  else toast('Nenhum clique novo detectado');
+}
+
+// Override buildMsg to use short links
+const origBuildMsg=buildMsg;
+// Short link generation happens during send, not in buildMsg
+
+// Override saveCfg to include short.io
+const origSaveCfg=saveCfg;
+saveCfg=function(){
+  try{
+    localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value,sk:document.getElementById('shortKey').value,sd:document.getElementById('shortDomain').value,sp:document.getElementById('shortProxy').value}));
+    toast('Salvo!');
+  }catch(x){}
+};
+const origLoadCfg=loadCfg;
+loadCfg=function(){
+  try{
+    const c=JSON.parse(localStorage.getItem('zf_cfg'));
+    if(c){document.getElementById('apiUrl').value=c.u||'';document.getElementById('apiInstance').value=c.i||'';document.getElementById('apiKey').value=c.k||'';if(c.sk&&!c.sk.startsWith('sk_'))document.getElementById('shortKey').value=c.sk;if(c.sd)document.getElementById('shortDomain').value=c.sd;document.getElementById('shortProxy').value=c.sp||''}
+  }catch(x){}
+};
+
+// Override sendMsg to generate short links
+const origSendMsg=sendMsg;
+sendMsg=async function(phone,text){
+  const shortKey=document.getElementById('shortKey').value;
+  const lnk=document.getElementById('lnk').value;
+  const c=contacts.find(x=>x.telefone===phone&&x.status==='pending');
+  if(!shortKey||!lnk)throw new Error('Configure a chave pública e o domínio do Short.io para gerar o link curto e rastrear cliques');
+  if(c){
+    const sl=await createShortLink(lnk,c.nome+' - '+c.curso);
+    if(sl.url){
+      text=text.replace(lnk,sl.url);
+      c.shortUrl=sl.url;
+      c.shortId=sl.id||clickLinkId(c);
+      c.clicks=0;
+    }else{
+      throw new Error('Short.io não criou o link para '+c.nome+': '+(sl.error||'verifique a configuração'));
+    }
+  }
+  if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,fileName:imageName||'banner',caption:text,media:rawB64()})}
+  return api('/message/sendText/{i}','POST',{number:phone,text});
+};
+
+// Add clicks to renderRpt
+const origRenderRpt=renderRpt;
+renderRpt=function(){
+  const s=contacts.filter(x=>x.status==='sent').length,d=contacts.filter(x=>x.status==='delivered').length,r=contacts.filter(x=>x.status==='read').length,e=contacts.filter(x=>x.status==='error').length,p=contacts.filter(x=>x.status==='pending').length,cl=contacts.filter(x=>x.status==='clicked').length;
+  document.getElementById('rS').textContent=s;document.getElementById('rD').textContent=d;document.getElementById('rE').textContent=e;document.getElementById('rP').textContent=p;document.getElementById('rCl').textContent=cl;
+  filterRpt(curFilter);
+};
+
 
 // ===== v3: sessões salvas, relatórios que persistem, dashboard com gráficos e navegação por etapas =====
 const byId=id=>document.getElementById(id);
 const attr=t=>esc(String(t)).replace(/"/g,'&quot;');
-const SC={pending:'#9ca3af',sent:'#22c55e',delivered:'#3b82f6',read:'#8b5cf6',error:'#ef4444'};
-const ORDER=['sent','delivered','read','error','pending'];
-const inSent=t=>t==='sent'||t==='delivered'||t==='read';
-const inDel=t=>t==='delivered'||t==='read';
-const inRead=t=>t==='read';
-function counts(list){return{enviados:list.filter(c=>inSent(c.status)).length,entregues:list.filter(c=>inDel(c.status)).length,lidos:list.filter(c=>inRead(c.status)).length,erros:list.filter(c=>c.status==='error').length,pend:list.filter(c=>c.status==='pending').length}}
+const SC={pending:'#9ca3af',sent:'#22c55e',delivered:'#3b82f6',read:'#8b5cf6',clicked:'#f97316',error:'#ef4444'};
+const ORDER=['sent','delivered','read','clicked','error','pending'];
+const inSent=t=>t==='sent'||t==='delivered'||t==='read'||t==='clicked';
+const inDel=t=>t==='delivered'||t==='read'||t==='clicked';
+const inRead=t=>t==='read'||t==='clicked';
+function counts(list){return{enviados:list.filter(c=>inSent(c.status)).length,entregues:list.filter(c=>inDel(c.status)).length,lidos:list.filter(c=>inRead(c.status)).length,cliques:list.filter(c=>c.status==='clicked'||numOrZero(c.clicks)>0).length,erros:list.filter(c=>c.status==='error').length,pend:list.filter(c=>c.status==='pending').length}}
 function fmtDt(ts){try{return new Date(ts).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}catch(x){return''}}
 function courseLabel(list){const u=[...new Set(list.map(c=>c.curso))];if(!u.length)return'—';const a=u[0].length>38?u[0].slice(0,38)+'…':u[0];return u.length>1?a+' +'+(u.length-1):a}
 
@@ -678,7 +793,7 @@ function loadCampaigns(){
 function saveCampaigns(){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns.slice(0,50)))}catch(x){}}
 function activeCampaign(){return allCampaignsView?null:(campaigns.find(c=>String(c.id)===String(activeCampId))||null)}
 function syncActiveCampaign(){const c=activeCampaign();if(!c)return;c.contacts=JSON.parse(JSON.stringify(contacts));c.sid=sid||c.sid||Date.now();c.updatedAt=Date.now();saveCampaigns()}
-function campaignLabel(c){const k=counts(c.contacts||[]);return 'Enviados '+k.enviados+' · Entregues '+k.entregues+' · Erros '+k.erros+' · Pendentes '+k.pend}
+function campaignLabel(c){const k=counts(c.contacts||[]);return 'Enviados '+k.enviados+' · Entregues '+k.entregues+' · Cliques '+k.cliques+' · Erros '+k.erros+' · Pendentes '+k.pend}
 function renderCampaigns(){
   const sel=byId('campSel'),list=byId('campList'),info=byId('campInfo');if(!sel||!list)return;
   sel.innerHTML='<option value="__all__">Todas as campanhas</option>'+(campaigns.length?campaigns.map(c=>'<option value="'+attr(c.id)+'">'+esc(c.name)+'</option>').join(''):'<option value="">Nenhuma campanha cadastrada</option>');
@@ -696,7 +811,7 @@ function renderCampaigns(){
     }
   }
   const sp=byId('scheduledCampaigns'),pending=campaigns.filter(scheduledPending);if(sp)sp.innerHTML=pending.length?pending.map(c=>'<div class="scheduled-item"><div class="scheduled-main"><strong>'+esc(c.name)+'</strong><small>Disparo previsto para '+esc(scheduledLabel(c.schedule))+'</small></div><span class="scheduled-badge">Pendente</span></div>').join(''):'<div class="dash-empty">Nenhum lote agendado.</div>';
-  list.innerHTML=campaigns.length?campaigns.map(c=>{const k=counts(c.contacts||[]);return '<div class="campaign-item"><div class="campaign-main"><strong>'+esc(c.name)+'</strong><small>Criada em '+fmtDt(c.createdAt)+'</small><div class="campaign-metrics"><span>Enviados <b>'+k.enviados+'</b></span><span>Entregues <b>'+k.entregues+'</b></span><span>Erros <b>'+k.erros+'</b></span><span>Pendentes <b>'+k.pend+'</b></span></div></div><button class="btn btn-sm campaign-delete" style="background:var(--red-p);color:var(--red)" onclick="deleteCampaign(\''+String(c.id).replace(/'/g,'')+'\')">Excluir</button></div>'}).join(''):'<div class="dash-empty">Nenhuma campanha cadastrada.</div>';
+  list.innerHTML=campaigns.length?campaigns.map(c=>{const k=counts(c.contacts||[]);return '<div class="campaign-item"><div class="campaign-main"><strong>'+esc(c.name)+'</strong><small>Criada em '+fmtDt(c.createdAt)+'</small><div class="campaign-metrics"><span>Enviados <b>'+k.enviados+'</b></span><span>Entregues <b>'+k.entregues+'</b></span><span>Cliques <b>'+k.cliques+'</b></span><span>Erros <b>'+k.erros+'</b></span><span>Pendentes <b>'+k.pend+'</b></span></div></div><button class="btn btn-sm campaign-delete" style="background:var(--red-p);color:var(--red)" onclick="deleteCampaign(\''+String(c.id).replace(/'/g,'')+'\')">Excluir</button></div>'}).join(''):'<div class="dash-empty">Nenhuma campanha cadastrada.</div>';
 }
 function createCampaign(){
   const name=byId('campName').value.trim();if(!name){toast('Digite o nome da campanha','err');return}
@@ -779,13 +894,13 @@ function fillSessSel(){
   sel.innerHTML='<option value="cur">Envio atual ('+contacts.length+' contatos)</option>'+others.map(x=>'<option value="'+x.sid+'">'+esc(fmtDt(x.sid))+' — '+esc(courseLabel(x.contacts))+' ('+x.contacts.length+')</option>').join('');
   sel.value=viewObj?String(viewObj.sid):'cur';
   const bn=byId('viewBanner');
-  if(viewObj){bn.classList.remove('hidden');bn.innerHTML='Você está vendo o envio de <strong>'+esc(fmtDt(viewObj.sid))+'</strong>. Dá para atualizar status, mas não reenviar. <button class="btn btn-out btn-sm" style="margin-left:6px" onclick="openSess(\'cur\')">Voltar ao envio atual</button>'}
+  if(viewObj){bn.classList.remove('hidden');bn.innerHTML='Você está vendo o envio de <strong>'+esc(fmtDt(viewObj.sid))+'</strong>. Dá para atualizar status e cliques, mas não reenviar. <button class="btn btn-out btn-sm" style="margin-left:6px" onclick="openSess(\'cur\')">Voltar ao envio atual</button>'}
   else bn.classList.add('hidden');
 }
 renderRpt=function(){
   const k=counts(RC());
   byId('rS').textContent=k.enviados;byId('rD').textContent=k.entregues;
-  byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
+  byId('rCl').textContent=k.cliques;byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
   fillSessSel();filterRpt(curFilter);
   if(!viewObj)saveCur();
 };
@@ -795,26 +910,26 @@ filterRpt=function(f,el){
   if(el)el.classList.add('on');
   else{const bt=[...document.querySelectorAll('.filter-btn')].find(b=>(b.getAttribute('onclick')||'').includes("'"+f+"'"));(bt||document.querySelector('.filter-btn')).classList.add('on')}
   const all=RC();let list;
-  if(f==='all')list=all;else if(f==='sent')list=all.filter(c=>inSent(c.status));else if(f==='delivered')list=all.filter(c=>inDel(c.status));else if(f==='read')list=all.filter(c=>inRead(c.status));else list=all.filter(c=>c.status===f);
+  if(f==='all')list=all;else if(f==='sent')list=all.filter(c=>inSent(c.status));else if(f==='delivered')list=all.filter(c=>inDel(c.status));else if(f==='read')list=all.filter(c=>inRead(c.status));else if(f==='clicked')list=all.filter(c=>c.status==='clicked'||Number(c.clicks)>0);else list=all.filter(c=>c.status===f);
   const tb=byId('rb');
-  if(!list.length){tb.innerHTML='<tr><td colspan="5" style="text-align:center;padding:26px;color:var(--tx3)">'+(all.length?'Nenhum contato com este status.':'Nenhum contato neste envio. Importe a lista na aba Contatos (passo 2) ou escolha um envio anterior acima.')+'</td></tr>';return}
-  tb.innerHTML=list.map(c=>'<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.telefone)+'</td><td><span class="badge '+BADGE[c.status]+'">'+ST[c.status]+'</span></td><td style="font-size:.74rem">'+(c.time||'—')+'</td><td style="font-size:.72rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.detail||'—')+'</td></tr>').join('');
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" style="text-align:center;padding:26px;color:var(--tx3)">'+(all.length?'Nenhum contato com este status.':'Nenhum contato neste envio. Importe a lista na aba Contatos (passo 2) ou escolha um envio anterior acima.')+'</td></tr>';return}
+  tb.innerHTML=list.map(c=>'<tr><td>'+esc(c.nome)+'</td><td>'+esc(c.telefone)+'</td><td><span class="badge '+BADGE[c.status]+'">'+ST[c.status]+'</span></td><td style="font-size:.8rem;text-align:center">'+(clickLinkId(c)?String(Number(c.clicks)||0):'—')+'</td><td style="font-size:.74rem">'+(c.time||'—')+'</td><td style="font-size:.72rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.detail||'—')+'</td></tr>').join('');
 };
 exportCSV=function(){
   const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-  let csv='Nome;Telefone;Curso;Protocolo;Status;Hora;Detalhe\n';
-  RC().forEach(c=>{csv+=[c.nome,c.telefone,c.curso,c.protocolo,ST[c.status],c.time||'',c.detail||''].map(q).join(';')+'\n'});
+  let csv='Nome;Telefone;Curso;Protocolo;Status;Hora;Detalhe;Link curto;Cliques;Local\n';
+  RC().forEach(c=>{csv+=[c.nome,c.telefone,c.curso,c.protocolo,ST[c.status],c.time||'',c.detail||'',c.shortUrl||'',c.clicks||0,c.local?locTxt(c):''].map(q).join(';')+'\n'});
   const b=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='zapflow_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 };
 const _retryErrors=retryErrors;
 retryErrors=function(){if(viewObj){toast('Volte para o envio atual para reenviar','err');return}_retryErrors()};
 
-// status de entrega: aceita os formatos da Evolution API v2
+// status de entrega: aceita os formatos da Evolution API v2 e não rebaixa "Clicou"
 function stRank(v){const m={ERROR:0,PENDING:1,SERVER_ACK:2,DELIVERY_ACK:3,READ:4,PLAYED:5,'0':0,'1':1,'2':2,'3':3,'4':4,'5':5};const r=m[String(v==null?'':v).toUpperCase()];return r==null?-1:r}
 refreshStatus=async function(){
   const list=RC();let updated=0,falhas=0,tentados=0;
   for(const c of list){
-    if(!c.msgId||c.status==='error'||c.status==='pending'||c.status==='read')continue;
+    if(!c.msgId||c.status==='error'||c.status==='pending'||c.status==='read'||c.status==='clicked')continue;
     tentados++;
     try{
       const r=await api('/chat/findMessages/{i}','POST',{where:{key:{id:c.msgId}}});
@@ -831,9 +946,33 @@ refreshStatus=async function(){
   else if(updated>0)toast(updated+' status atualizados');
   else toast('Nenhuma atualização encontrada');
 };
+function clickLinkId(c){
+  if(c&&c.shortId!=null&&String(c.shortId).trim())return String(c.shortId).trim();
+  if(c&&c.shortUrl){try{const u=new URL(c.shortUrl);const p=u.pathname.split('/').filter(Boolean);return p[p.length-1]||''}catch(x){}}
+  return '';
+}
+refreshClicks=async function(){
+  const list=RC(),comLink=list.map(c=>({c,id:clickLinkId(c)})).filter(x=>x.id);
+  if(!comLink.length){toast('Nenhum contato com link curto neste envio');return}
+  let updated=0,falhas=0,soRobo=0,erro='';
+  for(const item of comLink){
+    const c=item.c;
+    try{
+      const st=await getClickStats(item.id),clicks=Math.max(numOrZero(st.human),numOrZero(st.total));
+      c.shortId=c.shortId||item.id;c.clicks=clicks;c.clickStats={human:numOrZero(st.human),total:numOrZero(st.total)};
+      if(clicks>0){
+        if(c.status!=='error'){if(c.status!=='clicked')updated++;c.status='clicked';c.detail='Clicou '+clicks+'x no link'}
+      }else if(st.total>0)soRobo++;
+    }catch(e){falhas++;erro=erro||e.message}
+  }
+  persistRC();renderRpt();
+  if(falhas===comLink.length)toast('Não consegui ler os cliques: '+erro,'err');
+  else if(updated>0)toast(updated+' cliques detectados');
+  else toast('Nenhum clique novo detectado'+(soRobo?'. '+soRobo+' link(s) só tiveram visita de robô ou a pré-visualização do WhatsApp.':''));
+};
 async function refreshAllInfo(){
   const b=byId('refreshAllBtn');if(b)b.disabled=true;
-  try{await refreshStatus();renderRpt();}
+  try{await refreshStatus();await refreshClicks();renderRpt();}
   finally{if(b)b.disabled=false}
 }
 
@@ -841,7 +980,7 @@ async function refreshAllInfo(){
 const emptyBox=t=>'<div class="dash-empty">'+t+'</div>';
 function renderFunnel(k){
   if(!k.enviados&&!k.erros){byId('chFunnel').innerHTML=emptyBox('Aparece depois do primeiro envio.');return}
-  const rows=[['Enviados',k.enviados,SC.sent],['Entregues',k.entregues,SC.delivered]],base=Math.max(k.enviados,1);
+  const rows=[['Enviados',k.enviados,SC.sent],['Entregues',k.entregues,SC.delivered],['Clicaram',k.cliques,SC.clicked]],base=Math.max(k.enviados,1);
   byId('chFunnel').innerHTML=rows.map(r=>'<div class="fn-row"><div class="fn-l">'+r[0]+'</div><div class="fn-bar"><div style="width:'+(r[1]?Math.max(r[1]/base*100,3):0)+'%;background:'+r[2]+'"></div></div><div class="fn-v">'+r[1]+' <span>'+(k.enviados?Math.round(r[1]/k.enviados*100):0)+'%</span></div></div>').join('')+'<div class="fn-note">Erros: '+k.erros+' · Pendentes: '+k.pend+'</div>';
 }
 function renderDonut(all){
@@ -872,7 +1011,7 @@ function renderCourses(all){
   const html=rows.map(([nome,l])=>{
     const t=l.length,k=counts(l);
     const seg=ORDER.map(st=>{const n=l.filter(c=>c.status===st).length;return n?'<div title="'+ST[st]+': '+n+'" style="width:'+(n/t*100)+'%;background:'+SC[st]+'"></div>':''}).join('');
-    return '<div class="cr"><div class="cr-h"><span title="'+attr(nome)+'">'+esc(nome.length>56?nome.slice(0,56)+'…':nome)+'</span><b>'+t+' contatos</b></div><div class="cr-bar">'+seg+'</div><div class="cr-s">Enviados '+k.enviados+' · Entregues '+k.entregues+' · Erros '+k.erros+'</div></div>';
+    return '<div class="cr"><div class="cr-h"><span title="'+attr(nome)+'">'+esc(nome.length>56?nome.slice(0,56)+'…':nome)+'</span><b>'+t+' contatos</b></div><div class="cr-bar">'+seg+'</div><div class="cr-s">Enviados '+k.enviados+' · Entregues '+k.entregues+' · Clicaram '+k.cliques+' · Erros '+k.erros+'</div></div>';
   }).join('');
   byId('chCourse').innerHTML=html+'<div class="legend-row">'+ORDER.map(k=>'<span><i style="background:'+SC[k]+'"></i>'+ST[k]+'</span>').join('')+'</div>';
 }
@@ -893,10 +1032,10 @@ loadDash=function(){
     if(byId('dashTitle'))byId('dashTitle').textContent=!hasCampaigns?'Início':allCampaignsView?'Início — Todas as campanhas':camp?'Início — '+camp.name:'Início';
     if(byId('dashSub'))byId('dashSub').textContent=!hasCampaigns?'Nenhuma campanha cadastrada.':allCampaignsView?'Acompanhamento consolidado de todas as campanhas.':camp?'Acompanhamento da campanha ativa.':'Selecione uma campanha para acompanhar o andamento.';
     byId('dSent').textContent=camp||allCampaignsView?k.enviados:Math.max(st.s||0,k.enviados);
-    byId('dDel').textContent=k.entregues;
+    byId('dDel').textContent=k.entregues;byId('dClick').textContent=k.cliques;
     byId('dErr').textContent=camp||allCampaignsView?k.erros:Math.max(st.e||0,k.erros);
     byId('dSess').textContent=allCampaignsView?campaigns.length:camp?(all.some(x=>x.status&&x.status!=='pending')?1:0):h.filter(x=>x.s>0||x.e>0).length;
-    byId('dashNote').textContent=!hasCampaigns?'Cadastre uma campanha para começar.':allCampaignsView?'Indicadores consolidados de todas as campanhas.':camp?'Indicadores e contatos da campanha ativa.':'Selecione uma campanha para ver os indicadores do lote.';
+    byId('dashNote').textContent=!hasCampaigns?'Cadastre uma campanha para começar.':allCampaignsView?'Indicadores consolidados de todas as campanhas.':camp?'Indicadores, contatos e cliques da campanha ativa.':'Selecione uma campanha para ver os indicadores do lote.';
     renderFunnel(k);renderDonut(all);renderDays();renderCourses(all);renderHist(camp||allCampaignsView?[]:h,camp||allCampaignsView?[]:sess);
   }catch(x){console.error(x)}
 };
@@ -921,7 +1060,7 @@ function stepGo(i){
   go(STEPS[i][0]);window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// "Nova sessão": zera o contador do limite e recoloca na fila só quem deu erro. Não mexe em quem já foi enviado ou lido.
+// "Nova sessão": zera o contador do limite e recoloca na fila só quem deu erro. Não mexe em quem já foi enviado, lido ou clicou.
 resetSess=function(){
   if(viewObj){toast('Volte para o envio atual','err');return}
   sesSent=0;errors=0;
@@ -1050,7 +1189,10 @@ function removeDups(){
 async function checkConn(){
   let ok=false,msg='';
   try{
-    const d=await api('status');
+    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8000);
+    const res=await fetch(byId('apiUrl').value+'/instance/connectionState/'+byId('apiInstance').value,{headers:{apikey:byId('apiKey').value},signal:ctl.signal});
+    clearTimeout(tm);
+    const d=await res.json();
     if(d&&d.instance&&d.instance.state==='open')ok=true;
     else msg='O WhatsApp aparece como "'+((d&&d.instance&&d.instance.state)||'desconectado')+'". Reconecte o número na Evolution API e tente de novo.';
   }catch(e){msg='Não consegui falar com o sistema de envio. Abra o Docker Desktop, espere ele iniciar e tente de novo.'}
@@ -1066,6 +1208,7 @@ testApi=async function(){
 };
 (function(){
   ['tpl','lnk','minD','maxD','lim'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('input',refreshUI)});
+  ['apiUrl','apiInstance','apiKey','shortKey','shortDomain','shortProxy'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('change',()=>{saveCfg();if(id.startsWith('api'))checkConn()})});
   const bd=document.querySelector('.hdr-badge');
   if(bd){bd.title='Clique para conferir a conexão com o WhatsApp';bd.onclick=async()=>{const r=await checkConn();toast(r.ok?'WhatsApp conectado':'WhatsApp desconectado',r.ok?'':'err')}}
 })();
@@ -1165,7 +1308,7 @@ function clearDays(){SCH.days=[];saveSched();renderSched()}
 function prepareSchedule(){
   const done=contacts.filter(c=>c.status!=='pending');if(!done.length){toast('Todos os contatos já estão pendentes');return}
   if(!confirm('Recolocar '+done.length+' contato(s) na fila para este agendamento? Nenhum envio será feito agora.'))return;
-  done.forEach(c=>{c.status='pending';c.detail='';c.time='';c.msgId=null})
+  done.forEach(c=>{c.status='pending';c.detail='';c.time='';c.msgId=null;c.shortUrl='';c.shortId='';c.clicks=0;c.local='';c.pais=''})
   idx=0;sesSent=0;errors=0;SCH.days.forEach(k=>delete SCH.ran[k]);saveCur();renderTbl();renderSched();refreshUI();toast(done.length+' contato(s) pendente(s) para o agendamento');
 }
 
@@ -1218,6 +1361,18 @@ const _ref5=refreshUI;
 refreshUI=function(){_ref5();try{renderSched()}catch(x){console.error(x)}};
 const _go5=go;
 go=function(n){_go5(n);document.querySelectorAll('.nav-tab').forEach(t=>{if(t.classList.contains('on'))t.setAttribute('aria-current','page');else t.removeAttribute('aria-current')});const a=document.querySelector('.nav-tab.on');if(a&&a.scrollIntoView)a.scrollIntoView({inline:'center',block:'nearest'})};
+const locTxt=c=>c.local?c.local+(c.pais&&c.pais!=='BR'?' ('+c.pais+')':''):'—';
+function placesBars(rows){
+  const mx=rows[0][1];
+  return rows.map(r=>'<div class="fn-row" style="grid-template-columns:150px 1fr 36px"><div class="fn-l" title="'+attr(r[0])+'">'+esc(r[0])+'</div><div class="fn-bar"><div style="width:'+Math.max(r[1]/mx*100,6)+'%;background:var(--pri)"></div></div><div class="fn-v">'+r[1]+'</div></div>').join('')+'<div class="fn-note">Cidade aproximada, pelo endereço de internet de quem abriu o link. Não é o endereço da pessoa.</div>';
+}
+function renderPlaces(list,id){
+  const box=byId(id);if(!box)return;
+  const m={};list.forEach(c=>{if(c.local){const k=locTxt(c);m[k]=(m[k]||0)+1}});
+  const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(id==='rptPlaces'){box.innerHTML=rows.length?'<div class="card"><div class="card-t">De onde abriram o link</div>'+placesBars(rows)+'</div>':'';return}
+  box.innerHTML=rows.length?placesBars(rows):emptyBox('Aparece depois que alguém abrir o link e você atualizar os cliques no relatório.');
+}
 function setWaStatus(ok,msg){
   const b=byId('waBadge');if(!b)return;
   b.classList.toggle('on',!!ok);b.classList.toggle('off',!ok);
@@ -1233,117 +1388,6 @@ function initSched(){
 
 setWaStatus(false,'');
 initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();loadDash();refreshUI();checkConn();initSched();
-</script>
-</div><!-- end appContainer -->
-
-<script>
-// AUTH
-function authError(message){
-  const el=document.getElementById('authError');
-  el.textContent=message;
-  el.style.display='block';
-}
-function setAuthBusy(busy){
-  document.querySelectorAll('#loginForm button,#registerForm button').forEach(btn=>{
-    btn.disabled=busy;
-    btn.style.opacity=busy?'.65':'1';
-  });
-}
-function showRegister(){
-  if(!ALLOW_PUBLIC_SIGNUP){authError('O cadastro está fechado. Peça ao administrador para criar seu acesso.');return}
-  document.getElementById('loginForm').style.display='none';
-  document.getElementById('registerForm').style.display='block';
-}
-function showLogin(){
-  document.getElementById('registerForm').style.display='none';
-  document.getElementById('loginForm').style.display='block';
-}
-
-async function doLogin(){
-  const email=document.getElementById('authEmail').value.trim().toLowerCase();
-  const pass=document.getElementById('authPass').value;
-  document.getElementById('authError').style.display='none';
-  if(!email||!pass){authError('Preencha email e senha.');return}
-  setAuthBusy(true);
-  const{error}=await supa.auth.signInWithPassword({email,password:pass});
-  setAuthBusy(false);
-  if(error){authError(error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message);return}
-  // O listener de sessão abaixo libera a aplicação após o login ser confirmado.
-}
-
-async function doRegister(){
-  if(!ALLOW_PUBLIC_SIGNUP){showLogin();authError('O cadastro está fechado. Peça ao administrador para criar seu acesso.');return}
-  const email=document.getElementById('regEmail').value.trim().toLowerCase();
-  const pass=document.getElementById('regPass').value;
-  const errEl=document.getElementById('regError');
-  const okEl=document.getElementById('regSuccess');
-  errEl.style.display='none';okEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
-  if(pass.length<6){errEl.textContent='A senha precisa ter pelo menos 6 caracteres.';errEl.style.display='block';return}
-  setAuthBusy(true);
-  const{error}=await supa.auth.signUp({email,password:pass});
-  setAuthBusy(false);
-  if(error){errEl.textContent=error.message;errEl.style.display='block';return}
-  okEl.textContent='Conta criada! Verifique seu email para confirmar, depois faça login.';okEl.style.display='block';
-  setTimeout(()=>showLogin(),3000);
-}
-
-function enterApp(){
-  document.getElementById('loginScreen').style.display='none';
-  document.getElementById('appContainer').style.display='block';
-}
-async function enterAppIfAllowed(){
-  const {data:sessionData}=await supa.auth.getSession();
-  const userId=sessionData?.session?.user?.id;
-  if(!userId){leaveApp();return}
-  if(userId!==ZAPFLOW_OWNER_ID){
-    await supa.auth.signOut({scope:'local'});
-    leaveApp();
-    authError('Este usuário não tem autorização para usar o ZapFlow.');
-    return;
-  }
-  const {data,error}=await supa.from('zapflow_access').select('user_id').eq('user_id',userId).maybeSingle();
-  if(error||!data){
-    await supa.auth.signOut();
-    leaveApp();
-    authError('Este usuário não tem autorização para usar o ZapFlow.');
-    return;
-  }
-  enterApp();
-}
-function leaveApp(){
-  document.getElementById('appContainer').style.display='none';
-  document.getElementById('loginScreen').style.display='flex';
-  document.getElementById('authPass').value='';
-}
-async function doLogout(){
-  const{error}=await supa.auth.signOut();
-  if(error)authError('Não foi possível sair. Tente novamente.');
-}
-
-// Mantém a interface bloqueada se a sessão expirar ou for encerrada em outra aba.
-supa.auth.onAuthStateChange((_event,session)=>{
-  if(session)enterAppIfAllowed(); else leaveApp();
-});
-supa.auth.getSession().then(({data,error})=>{
-  if(error)authError('Não foi possível validar a sessão. Recarregue a página.');
-  else if(data.session)enterAppIfAllowed();
-});
-
-// Add logout button to header
-document.addEventListener('DOMContentLoaded',()=>{
-  const link=document.getElementById('registerLink');
-  if(link&&!ALLOW_PUBLIC_SIGNUP){link.style.display='none';link.previousElementSibling.style.display='none'}
-  const hdr=document.querySelector('.header-inner');
-  if(hdr){
-    const logoutBtn=document.createElement('button');
-    logoutBtn.textContent='Sair';
-    logoutBtn.style.cssText='background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 16px;border-radius:100px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;margin-left:8px';
-    logoutBtn.onclick=doLogout;
-    const badge=document.querySelector('.hdr-badge');
-    if(badge)badge.parentElement.appendChild(logoutBtn);
-  }
-});
 </script>
 </body>
 </html>
