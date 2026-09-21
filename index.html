@@ -284,8 +284,11 @@ const SUPA_URL='https://sxrxoeiloupbyjedlbpd.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnhvZWlsb3VwYnlqZWRsYnBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0NTM4NTAsImV4cCI6MjA5NTAyOTg1MH0.hCKkwO_SJ5KW6PrZytVwxnuoWXKbGaUD4u_nI8cgFdM';
 // Não manter o login salvo no navegador: ao abrir/recarregar, pedir email e senha novamente.
 const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:false,autoRefreshToken:true,detectSessionInUrl:false}});
+const PROXY_URL='https://enhanced-feeling-battery-programme.trycloudflare.com';
 // Deixe false para que somente contas criadas no painel do Supabase possam entrar.
 const ALLOW_PUBLIC_SIGNUP=false;
+// Usuário exclusivo autorizado a usar este ZapFlow.
+const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
 </script>
 </head>
 <body>
@@ -562,8 +565,22 @@ function loadDash(){try{
 // TABS
 function go(n){document.querySelectorAll('.pn').forEach(p=>p.classList.remove('on'));const page=document.getElementById('p-'+n);if(!page)return;document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('on'));page.classList.add('on');const tab=[...document.querySelectorAll('.nav-tab')].find(t=>(t.getAttribute('onclick')||'').includes("go('"+n+"')"));if(tab)tab.classList.add('on');if(n==='dash')loadDash();if(n==='camp')renderCampaigns();if(n==='rpt')renderRpt()}
 
-// API
-async function api(ep,method='GET',body=null){const u=document.getElementById('apiUrl').value,k=document.getElementById('apiKey').value,i=document.getElementById('apiInstance').value;const o={method,headers:{'apikey':k,'Content-Type':'application/json','ngrok-skip-browser-warning':'true'}};if(body)o.body=JSON.stringify(body);return(await fetch(u+ep.replace('{i}',i),o)).json()}
+// API: a chave da Evolution nunca sai do proxy local.
+async function api(ep,method='GET',body=null){
+  const actions={
+    '/instance/connectionState/{i}':'status',
+    '/message/sendText/{i}':'sendText',
+    '/message/sendMedia/{i}':'sendMedia',
+    '/chat/findMessages/{i}':'findMessages'
+  };
+  const action=actions[ep]||ep;
+  const{data,error}=await supa.auth.getSession();
+  if(error||!data.session){leaveApp();throw new Error('Sessão expirada. Faça login novamente.')}
+  const r=await fetch(PROXY_URL+'/api/whatsapp',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+data.session.access_token},body:JSON.stringify({action,payload:body})});
+  const result=await r.json();
+  if(!r.ok)throw new Error(result.error||'Erro no proxy de envio');
+  return result;
+}
 async function testApi(){const el=document.getElementById('apiResult');el.innerHTML='<div class="info-b">Testando...</div>';try{const r=await api('/instance/connectionState/{i}');if(r.instance&&r.instance.state==='open'){el.innerHTML='<div class="info-b ok"><strong>Conectado!</strong> WhatsApp ativo.</div>';document.getElementById('apiDot').className='hdr-dot on';document.getElementById('apiLbl').textContent='Conectado'}else el.innerHTML='<div class="info-b er">WhatsApp não conectado. Status: '+(r.instance?.state||JSON.stringify(r))+'</div>'}catch(e){el.innerHTML='<div class="info-b er">Erro: '+e.message+'</div>'}}
 function rawB64(){return imageB64?imageB64.replace(/^data:[^;]+;base64,/,''):null}
 async function sendMsg(phone,text){if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,fileName:imageName||'banner',caption:text,media:rawB64()})}return api('/message/sendText/{i}','POST',{number:phone,text})}
@@ -1039,10 +1056,7 @@ function removeDups(){
 async function checkConn(){
   let ok=false,msg='';
   try{
-    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8000);
-    const res=await fetch(byId('apiUrl').value+'/instance/connectionState/'+byId('apiInstance').value,{headers:{apikey:byId('apiKey').value,'ngrok-skip-browser-warning':'true'},signal:ctl.signal});
-    clearTimeout(tm);
-    const d=await res.json();
+    const d=await api('status');
     if(d&&d.instance&&d.instance.state==='open')ok=true;
     else msg='O WhatsApp aparece como "'+((d&&d.instance&&d.instance.state)||'desconectado')+'". Reconecte o número na Evolution API e tente de novo.';
   }catch(e){msg='Não consegui falar com o sistema de envio. Abra o Docker Desktop, espere ele iniciar e tente de novo.'}
@@ -1289,6 +1303,12 @@ async function enterAppIfAllowed(){
   const {data:sessionData}=await supa.auth.getSession();
   const userId=sessionData?.session?.user?.id;
   if(!userId){leaveApp();return}
+  if(userId!==ZAPFLOW_OWNER_ID){
+    await supa.auth.signOut({scope:'local'});
+    leaveApp();
+    authError('Este usuário não tem autorização para usar o ZapFlow.');
+    return;
+  }
   const {data,error}=await supa.from('zapflow_access').select('user_id').eq('user_id',userId).maybeSingle();
   if(error||!data){
     await supa.auth.signOut();
