@@ -1285,6 +1285,19 @@ function enterApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('appContainer').style.display='block';
 }
+async function enterAppIfAllowed(){
+  const {data:sessionData}=await supa.auth.getSession();
+  const userId=sessionData?.session?.user?.id;
+  if(!userId){leaveApp();return}
+  const {data,error}=await supa.from('zapflow_access').select('user_id').eq('user_id',userId).maybeSingle();
+  if(error||!data){
+    await supa.auth.signOut();
+    leaveApp();
+    authError('Este usuário não tem autorização para usar o ZapFlow.');
+    return;
+  }
+  enterApp();
+}
 function leaveApp(){
   document.getElementById('appContainer').style.display='none';
   document.getElementById('loginScreen').style.display='flex';
@@ -1297,11 +1310,11 @@ async function doLogout(){
 
 // Mantém a interface bloqueada se a sessão expirar ou for encerrada em outra aba.
 supa.auth.onAuthStateChange((_event,session)=>{
-  if(session)enterApp(); else leaveApp();
+  if(session)enterAppIfAllowed(); else leaveApp();
 });
 supa.auth.getSession().then(({data,error})=>{
   if(error)authError('Não foi possível validar a sessão. Recarregue a página.');
-  else if(data.session)enterApp();
+  else if(data.session)enterAppIfAllowed();
 });
 
 // Add logout button to header
