@@ -396,13 +396,7 @@ const ZAPFLOW_OWNER_ID='1c49b077-a23b-435f-847b-b13a403a6b2c';
   <h2 class="pn-t">Conexão</h2><p class="pn-d">Clique em <strong>Testar conexão</strong> para conferir se o WhatsApp está ligado. Se der erro, abra o Docker Desktop, espere ele iniciar e tente de novo.</p>
   <div class="act-grid"><button class="btn btn-pri" onclick="testApi()">Testar conexão</button></div>
   <div id="apiResult" class="mt"></div>
-  <details class="adv">
-    <summary>Ajustes de conexão (normalmente não precisa mexer)</summary>
-    <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl"></div><div><label>Nome da instância</label><input type="text" id="apiInstance"></div></div>
-    <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey"></div>
-  </details>
-  <div class="act-grid mt"><button class="btn btn-out" onclick="saveCfg()">Salvar configuração</button></div>
-  <div class="hint">As alterações nestes campos são salvas automaticamente.</div>
+  <div class="hint mt">A conexão é feita por um servidor intermediário protegido. As credenciais da Evolution API não ficam neste navegador.</div>
 </div>
 
 <!-- CONTACTS -->
@@ -548,8 +542,8 @@ let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,l
 
 // STORAGE
 function saveHist(s,e){try{let h=JSON.parse(localStorage.getItem('zf_h')||'[]');const cid=String(activeCampId||'legacy');h.unshift({d:new Date().toLocaleDateString('pt-BR'),t:new Date().toLocaleTimeString('pt-BR'),s,e,sid,campId:activeCampId});if(h.length>50)h=h.slice(0,50);localStorage.setItem('zf_h',JSON.stringify(h));let st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');st.s+=s;st.e+=e;st.n++;st.byCamp=st.byCamp||{};st.byCamp[cid]=st.byCamp[cid]||{s:0,e:0,n:0};st.byCamp[cid].s+=s;st.byCamp[cid].e+=e;st.byCamp[cid].n++;localStorage.setItem('zf_st',JSON.stringify(st));let dy=JSON.parse(localStorage.getItem('zf_dy')||'{}');const td=new Date().toLocaleDateString('pt-BR');dy[td]=(dy[td]||0)+s;localStorage.setItem('zf_dy',JSON.stringify(dy))}catch(x){}}
-function saveCfg(){try{localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value}));toast('Salvo!')}catch(x){}}
-function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u;document.getElementById('apiInstance').value=c.i;document.getElementById('apiKey').value=c.k}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
+function saveCfg(){toast('A conexão é gerenciada com segurança pelo proxy local')}
+function loadCfg(){try{localStorage.removeItem('zf_cfg')}catch(x){}}
 function loadDash(){try{
   const st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');
   document.getElementById('dSent').textContent=st.s;document.getElementById('dErr').textContent=st.e;document.getElementById('dSess').textContent=st.n;
@@ -678,7 +672,7 @@ const CAMP_KEY='zf_campaigns';
 function loadCampaigns(){
   try{campaigns=JSON.parse(localStorage.getItem(CAMP_KEY)||'[]');if(!Array.isArray(campaigns))campaigns=[]}catch(x){campaigns=[]}
   // Migra uma lista anterior para uma campanha, sem apagar os dados existentes.
-  if(!campaigns.length){try{const old=JSON.parse(localStorage.getItem('zf_cur')||'null');if(old&&Array.isArray(old.contacts)&&old.contacts.length){const id='legacy-'+(old.sid||Date.now());campaigns=[{id,name:'Campanha anterior',createdAt:old.sid||Date.now(),updatedAt:Date.now(),sid:old.sid||Date.now(),contacts:old.contacts}];activeCampId=id}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
+  if(!campaigns.length){try{const old=JSON.parse(localStorage.getItem('zf_cur')||'null');if(old&&Array.isArray(old.contacts)&&old.contacts.length){const id='legacy-'+(old.sid||Date.now());campaigns=[{id,name:'Campanha anterior',createdAt:old.sid||Date.now(),updatedAt:Date.now(),sid:old.sid||Date.now(),contacts:old.contacts}];activeCampId=id}}catch(x){}}
   if(!activeCampId&&campaigns.length)activeCampId=String(campaigns[0].id);
 }
 function saveCampaigns(){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns.slice(0,50)))}catch(x){}}
@@ -751,7 +745,7 @@ function saveCur(){
   }catch(x){}
 }
 function persistRC(){
-  if(viewObj){try{const all=getSessions(),i=all.findIndex(x=>x.sid===viewObj.sid);if(i>=0){all[i]=viewObj;putSessions(all)}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
+  if(viewObj){try{const all=getSessions(),i=all.findIndex(x=>x.sid===viewObj.sid);if(i>=0){all[i]=viewObj;putSessions(all)}}catch(x){}}
   else saveCur();
 }
 function RC(){return viewObj?viewObj.contacts:contacts}
@@ -1072,7 +1066,6 @@ testApi=async function(){
 };
 (function(){
   ['tpl','lnk','minD','maxD','lim'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('input',refreshUI)});
-  ['apiUrl','apiInstance','apiKey'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('change',()=>{saveCfg();checkConn()})});
   const bd=document.querySelector('.hdr-badge');
   if(bd){bd.title='Clique para conferir a conexão com o WhatsApp';bd.onclick=async()=>{const r=await checkConn();toast(r.ok?'WhatsApp conectado':'WhatsApp desconectado',r.ok?'':'err')}}
 })();
