@@ -734,24 +734,9 @@ loadCfg=function(){
   }catch(x){}
 };
 
-// Override sendMsg to generate short links
+// Override sendMsg - envio direto sem Short.io
 const origSendMsg=sendMsg;
 sendMsg=async function(phone,text){
-  const shortKey=document.getElementById('shortKey').value;
-  const lnk=document.getElementById('lnk').value;
-  const c=contacts.find(x=>x.telefone===phone&&x.status==='pending');
-  if(!shortKey||!lnk)throw new Error('Configure a chave pública e o domínio do Short.io para gerar o link curto e rastrear cliques');
-  if(c){
-    const sl=await createShortLink(lnk,c.nome+' - '+c.curso);
-    if(sl.url){
-      text=text.replace(lnk,sl.url);
-      c.shortUrl=sl.url;
-      c.shortId=sl.id||clickLinkId(c);
-      c.clicks=0;
-    }else{
-      throw new Error('Short.io não criou o link para '+c.nome+': '+(sl.error||'verifique a configuração'));
-    }
-  }
   if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,fileName:imageName||'banner',caption:text,media:rawB64()})}
   return api('/message/sendText/{i}','POST',{number:phone,text});
 };
