@@ -278,8 +278,55 @@ tr:last-child td{border-bottom:0}
   .pn-t{font-size:1.6rem}
 }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/supabase-js/2.45.4/supabase.umd.min.js"></script>
+<script>
+const SUPA_URL='https://wvrmlhmrkmxjrieybmps.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind2cm1saG1ya214anJpZXlibXBzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NDQwNzMsImV4cCI6MjEwNTUyMDA3M30.2XsFvzsfE8VrXFdh2NtU2rTt01DdS32v8DfFramWMSU';
+const supabase=window.supabase.createClient(SUPA_URL,SUPA_KEY);
+</script>
 </head>
 <body>
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:20px">
+  <div style="width:100%;max-width:380px">
+    <div style="text-align:center;margin-bottom:32px">
+      <div style="width:56px;height:56px;background:var(--pri);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:#fff;font-size:1.4rem;font-weight:800">Z</div>
+      <h1 style="font-size:1.4rem;font-weight:800;color:var(--tx)">ZapFlow</h1>
+      <p style="font-size:.84rem;color:var(--tx3);margin-top:4px">Disparador de mensagens</p>
+    </div>
+    <div style="background:var(--sf);border:1px solid var(--bd);border-radius:14px;padding:28px;box-shadow:0 4px 24px rgba(0,0,0,.06)">
+      <div id="loginForm">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;text-align:center">Entrar</h2>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Email</label>
+        <input type="email" id="authEmail" placeholder="seu@email.com" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:12px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Senha</label>
+        <input type="password" id="authPass" placeholder="Sua senha" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:16px" onkeydown="if(event.key==='Enter')doLogin()">
+        <button onclick="doLogin()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pri);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;transition:opacity .15s">Entrar</button>
+        <div id="authError" style="margin-top:10px;font-size:.82rem;color:#ef4444;text-align:center;display:none"></div>
+        <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
+          <span style="font-size:.82rem;color:var(--tx3)">Primeiro acesso?</span>
+          <a href="#" onclick="showRegister();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none;margin-left:4px">Criar conta</a>
+        </div>
+      </div>
+      <div id="registerForm" style="display:none">
+        <h2 style="font-size:1rem;font-weight:700;margin-bottom:16px;text-align:center">Criar conta</h2>
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Email</label>
+        <input type="email" id="regEmail" placeholder="seu@email.com" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:12px">
+        <label style="display:block;font-size:.78rem;font-weight:600;color:var(--tx2);margin-bottom:4px">Senha (minimo 6 caracteres)</label>
+        <input type="password" id="regPass" placeholder="Crie uma senha forte" style="width:100%;padding:11px 14px;border:1px solid var(--bd);border-radius:10px;font-family:inherit;font-size:.88rem;background:var(--sf);color:var(--tx);outline:none;margin-bottom:16px">
+        <button onclick="doRegister()" style="width:100%;padding:12px;border:none;border-radius:10px;background:var(--pri);color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer">Criar conta</button>
+        <div id="regError" style="margin-top:10px;font-size:.82rem;color:#ef4444;text-align:center;display:none"></div>
+        <div id="regSuccess" style="margin-top:10px;font-size:.82rem;color:#22c55e;text-align:center;display:none"></div>
+        <div style="text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--bd)">
+          <a href="#" onclick="showLogin();return false" style="font-size:.82rem;color:var(--pri);font-weight:600;text-decoration:none">Voltar para login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP (hidden until login) -->
+<div id="appContainer" style="display:none">
 <div class="app">
 <aside class="side">
   <div class="logo"><div class="logo-box" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path d="M21.5 3 2.5 10.4l6.1 2.5 2.7 7.6 3.3-4.6 4.6 3.3z" fill="currentColor"/><path d="M8.6 12.9 21.5 3" stroke="#fff" stroke-width="1.2" stroke-linecap="round" fill="none"/></svg></div><div><h1>ZapFlow</h1><p>Disparador de mensagens</p></div></div>
@@ -508,7 +555,7 @@ let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,l
 // STORAGE
 function saveHist(s,e){try{let h=JSON.parse(localStorage.getItem('zf_h')||'[]');const cid=String(activeCampId||'legacy');h.unshift({d:new Date().toLocaleDateString('pt-BR'),t:new Date().toLocaleTimeString('pt-BR'),s,e,sid,campId:activeCampId});if(h.length>50)h=h.slice(0,50);localStorage.setItem('zf_h',JSON.stringify(h));let st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');st.s+=s;st.e+=e;st.n++;st.byCamp=st.byCamp||{};st.byCamp[cid]=st.byCamp[cid]||{s:0,e:0,n:0};st.byCamp[cid].s+=s;st.byCamp[cid].e+=e;st.byCamp[cid].n++;localStorage.setItem('zf_st',JSON.stringify(st));let dy=JSON.parse(localStorage.getItem('zf_dy')||'{}');const td=new Date().toLocaleDateString('pt-BR');dy[td]=(dy[td]||0)+s;localStorage.setItem('zf_dy',JSON.stringify(dy))}catch(x){}}
 function saveCfg(){try{localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value}));toast('Salvo!')}catch(x){}}
-function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u||'https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value=c.i||'senar';document.getElementById('apiKey').value=c.k||''}else{document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
+function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u;document.getElementById('apiInstance').value=c.i;document.getElementById('apiKey').value=c.k}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
 function loadDash(){try{
   const st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');
   document.getElementById('dSent').textContent=st.s;document.getElementById('dErr').textContent=st.e;document.getElementById('dSess').textContent=st.n;
@@ -734,7 +781,7 @@ const origLoadCfg=loadCfg;
 loadCfg=function(){
   try{
     const c=JSON.parse(localStorage.getItem('zf_cfg'));
-    if(c){document.getElementById('apiUrl').value=c.u||'https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value=c.i||'senar';document.getElementById('apiKey').value=c.k||'';if(c.sk&&!c.sk.startsWith('sk_'))document.getElementById('shortKey').value=c.sk;if(c.sd)document.getElementById('shortDomain').value=c.sd;document.getElementById('shortProxy').value=c.sp||''}
+    if(c){document.getElementById('apiUrl').value=c.u||'https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value=c.i||'';document.getElementById('apiKey').value=c.k||'';if(c.sk&&!c.sk.startsWith('sk_'))document.getElementById('shortKey').value=c.sk;if(c.sd)document.getElementById('shortDomain').value=c.sd;document.getElementById('shortProxy').value=c.sp||''}
   }catch(x){}
 };
 
@@ -787,7 +834,7 @@ const CAMP_KEY='zf_campaigns';
 function loadCampaigns(){
   try{campaigns=JSON.parse(localStorage.getItem(CAMP_KEY)||'[]');if(!Array.isArray(campaigns))campaigns=[]}catch(x){campaigns=[]}
   // Migra uma lista anterior para uma campanha, sem apagar os dados existentes.
-  if(!campaigns.length){try{const old=JSON.parse(localStorage.getItem('zf_cur')||'null');if(old&&Array.isArray(old.contacts)&&old.contacts.length){const id='legacy-'+(old.sid||Date.now());campaigns=[{id,name:'Campanha anterior',createdAt:old.sid||Date.now(),updatedAt:Date.now(),sid:old.sid||Date.now(),contacts:old.contacts}];activeCampId=id}}catch(x){}}
+  if(!campaigns.length){try{const old=JSON.parse(localStorage.getItem('zf_cur')||'null');if(old&&Array.isArray(old.contacts)&&old.contacts.length){const id='legacy-'+(old.sid||Date.now());campaigns=[{id,name:'Campanha anterior',createdAt:old.sid||Date.now(),updatedAt:Date.now(),sid:old.sid||Date.now(),contacts:old.contacts}];activeCampId=id}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
   if(!activeCampId&&campaigns.length)activeCampId=String(campaigns[0].id);
 }
 function saveCampaigns(){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns.slice(0,50)))}catch(x){}}
@@ -860,7 +907,7 @@ function saveCur(){
   }catch(x){}
 }
 function persistRC(){
-  if(viewObj){try{const all=getSessions(),i=all.findIndex(x=>x.sid===viewObj.sid);if(i>=0){all[i]=viewObj;putSessions(all)}}catch(x){}}
+  if(viewObj){try{const all=getSessions(),i=all.findIndex(x=>x.sid===viewObj.sid);if(i>=0){all[i]=viewObj;putSessions(all)}}catch(x){document.getElementById('apiUrl').value='https://gardening-notre-favorite-row.trycloudflare.com';document.getElementById('apiInstance').value='senar'}}
   else saveCur();
 }
 function RC(){return viewObj?viewObj.contacts:contacts}
@@ -1388,6 +1435,68 @@ function initSched(){
 
 setWaStatus(false,'');
 initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();loadDash();refreshUI();checkConn();initSched();
+</script>
+</div><!-- end appContainer -->
+
+<script>
+// AUTH
+function showRegister(){document.getElementById('loginForm').style.display='none';document.getElementById('registerForm').style.display='block'}
+function showLogin(){document.getElementById('registerForm').style.display='none';document.getElementById('loginForm').style.display='block'}
+
+async function doLogin(){
+  const email=document.getElementById('authEmail').value.trim();
+  const pass=document.getElementById('authPass').value;
+  const errEl=document.getElementById('authError');
+  errEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
+  const{data,error}=await supabase.auth.signInWithPassword({email,password:pass});
+  if(error){errEl.textContent=error.message==='Invalid login credentials'?'Email ou senha incorretos.':error.message;errEl.style.display='block';return}
+  enterApp();
+}
+
+async function doRegister(){
+  const email=document.getElementById('regEmail').value.trim();
+  const pass=document.getElementById('regPass').value;
+  const errEl=document.getElementById('regError');
+  const okEl=document.getElementById('regSuccess');
+  errEl.style.display='none';okEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Preencha email e senha.';errEl.style.display='block';return}
+  if(pass.length<6){errEl.textContent='A senha precisa ter pelo menos 6 caracteres.';errEl.style.display='block';return}
+  const{data,error}=await supabase.auth.signUp({email,password:pass});
+  if(error){errEl.textContent=error.message;errEl.style.display='block';return}
+  okEl.textContent='Conta criada! Verifique seu email para confirmar, depois faca login.';okEl.style.display='block';
+  setTimeout(()=>showLogin(),3000);
+}
+
+function enterApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('appContainer').style.display='block';
+}
+
+async function doLogout(){
+  await supabase.auth.signOut();
+  document.getElementById('appContainer').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('authPass').value='';
+}
+
+// Check if already logged in
+supabase.auth.getSession().then(({data})=>{
+  if(data.session)enterApp();
+});
+
+// Add logout button to header
+document.addEventListener('DOMContentLoaded',()=>{
+  const hdr=document.querySelector('.header-inner');
+  if(hdr){
+    const logoutBtn=document.createElement('button');
+    logoutBtn.textContent='Sair';
+    logoutBtn.style.cssText='background:rgba(255,255,255,.15);color:#fff;border:none;padding:6px 16px;border-radius:100px;font-family:inherit;font-size:.78rem;font-weight:600;cursor:pointer;margin-left:8px';
+    logoutBtn.onclick=doLogout;
+    const badge=document.querySelector('.hdr-badge');
+    if(badge)badge.parentElement.appendChild(logoutBtn);
+  }
+});
 </script>
 </body>
 </html>
