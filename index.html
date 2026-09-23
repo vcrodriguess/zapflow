@@ -348,17 +348,10 @@ tr:last-child td{border-bottom:0}
     <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl"></div><div><label>Nome da instância</label><input type="text" id="apiInstance"></div></div>
     <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey"></div>
   </details>
-  <div class="card mt" style="background:var(--sf)">
-    <div class="card-t" style="font-size:.9rem">Rastreamento de cliques</div>
-    <div class="card-d">O ZapFlow cria um link curto para cada pessoa e mostra no relatório quem abriu a pesquisa e a cidade aproximada do clique. Isso confirma a abertura do link, não a conclusão do formulário.</div>
-    <div class="row"><div><label>Chave PÚBLICA do Short.io</label><input type="password" id="shortKey"></div><div><label>Domínio do Short.io</label><input type="text" id="shortDomain"></div></div>
-    <div class="mt"><label>Endereço do proxy de cliques</label><input type="text" id="shortProxy"><div class="hint">O proxy consulta o Short.io usando a chave secreta sem expô-la nesta página. Ele precisa estar ativo para o botão “Atualizar informações” funcionar.</div></div>
-    <button class="btn btn-out btn-sm mt" onclick="testShort()">Testar Short.io</button>
-    <div id="shortResult" class="mt"></div>
-    <details class="adv"><summary>Detalhes técnicos</summary><div class="hint">Aqui vai a chave PÚBLICA (pk_...). Para contar os cliques no relatório, a chave secreta fica no proxy local (pasta shortio-proxy, porta 8081), nunca neste arquivo.</div></details>
-  </div>
-  <div class="act-grid mt"><button class="btn btn-out" onclick="saveCfg()">Salvar configuração</button></div>
-  <div class="hint">As alterações nestes campos são salvas automaticamente.</div>
+  <input type="hidden" id="shortKey" value="">
+  <input type="hidden" id="shortDomain" value="">
+  <input type="hidden" id="shortProxy" value="">
+  <div id="shortResult" class="hidden"></div>
 </div>
 
 <!-- CONTACTS -->
