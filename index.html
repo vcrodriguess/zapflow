@@ -465,6 +465,7 @@ tr:last-child td{border-bottom:0}
     <button class="filter-btn on" onclick="filterRpt('all',this)">Todos</button>
     <button class="filter-btn" onclick="filterRpt('sent',this)">Enviados</button>
     <button class="filter-btn" onclick="filterRpt('delivered',this)">Entregues</button>
+    <button class="filter-btn" onclick="filterRpt('read',this)">Lidos</button>
         <button class="filter-btn" onclick="filterRpt('error',this)">Erros</button>
     <button class="filter-btn" onclick="filterRpt('pending',this)">Pendentes</button>
   </div>
@@ -491,8 +492,8 @@ corp:"Olá, {nome}. Tudo bem?\n\nIdentificamos sua participação no curso {curs
 emoji:"Olá, {nome}! Tudo bem? \ud83d\ude0a\n\nVi que você participou do curso {curso}, realizado pelo Senar-AR/ES, protocolo nº {protocolo}, e passei aqui para fazer um convite especial. \ud83c\udf3e\n\nEstamos realizando a Pesquisa de Qualidade e Satisfação 2026 e gostaríamos muito de contar com a sua participação!\n\nQueremos saber como foi sua experiência no curso e ouvir a sua opinião. Sua resposta é muito importante para nós. \ud83d\udc9a\n\n\ud83d\udd17 Para participar:\n{link}\n\nÉ rapidinho! \ud83d\ude0a\n\nSe tiver dificuldade, pode falar comigo por aqui.\n\nMuito obrigada! \ud83c\udf3e\ud83d\udc9a",
 custom:""
 };
-const ST={pending:'Pendente',sent:'Enviado',delivered:'Entregue',read:'Lido',clicked:'Clicou',error:'Erro',skipped:'Pulado'};
-const BADGE={pending:'badge-pending',sent:'badge-sent',delivered:'badge-delivered',read:'badge-read',clicked:'badge-read',error:'badge-error',skipped:'badge-skipped'};
+const ST={pending:'Pendente',sent:'Enviado',delivered:'Entregue',read:'Lido',error:'Erro',skipped:'Pulado'};
+const BADGE={pending:'badge-pending',sent:'badge-sent',delivered:'badge-delivered',read:'badge-read',error:'badge-error',skipped:'badge-skipped'};
 let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,logCl=false,imageB64=null,imageMime=null,imageName='',curFilter='all',statusInterval=null,sid=null,viewObj=null;
 
 // STORAGE
@@ -762,12 +763,12 @@ renderRpt=function(){
 // ===== v3: sessões salvas, relatórios que persistem, dashboard com gráficos e navegação por etapas =====
 const byId=id=>document.getElementById(id);
 const attr=t=>esc(String(t)).replace(/"/g,'&quot;');
-const SC={pending:'#9ca3af',sent:'#22c55e',delivered:'#3b82f6',read:'#8b5cf6',clicked:'#f97316',error:'#ef4444'};
-const ORDER=['sent','delivered','read','clicked','error','pending'];
-const inSent=t=>t==='sent'||t==='delivered'||t==='read'||t==='clicked';
-const inDel=t=>t==='delivered'||t==='read'||t==='clicked';
-const inRead=t=>t==='read'||t==='clicked';
-function counts(list){return{enviados:list.filter(c=>inSent(c.status)).length,entregues:list.filter(c=>inDel(c.status)).length,lidos:list.filter(c=>inRead(c.status)).length,cliques:list.filter(c=>c.status==='clicked'||numOrZero(c.clicks)>0).length,erros:list.filter(c=>c.status==='error').length,pend:list.filter(c=>c.status==='pending').length}}
+const SC={pending:'#9ca3af',sent:'#22c55e',delivered:'#3b82f6',read:'#8b5cf6',error:'#ef4444'};
+const ORDER=['sent','delivered','read','error','pending'];
+const inSent=t=>t==='sent'||t==='delivered'||t==='read';
+const inDel=t=>t==='delivered'||t==='read';
+const inRead=t=>t==='read';
+function counts(list){return{enviados:list.filter(c=>inSent(c.status)).length,entregues:list.filter(c=>inDel(c.status)).length,lidos:list.filter(c=>c.status==='read').length,erros:list.filter(c=>c.status==='error').length,pend:list.filter(c=>c.status==='pending').length}}
 function fmtDt(ts){try{return new Date(ts).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'})}catch(x){return''}}
 function courseLabel(list){const u=[...new Set(list.map(c=>c.curso))];if(!u.length)return'—';const a=u[0].length>38?u[0].slice(0,38)+'…':u[0];return u.length>1?a+' +'+(u.length-1):a}
 
@@ -892,7 +893,7 @@ function fillSessSel(){
 renderRpt=function(){
   const k=counts(RC());
   byId('rS').textContent=k.enviados;byId('rD').textContent=k.entregues;
-  byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
+  if(byId('rR'))byId('rR').textContent=k.lidos;byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
   fillSessSel();filterRpt(curFilter);
   if(!viewObj)saveCur();
 };
@@ -921,7 +922,7 @@ function stRank(v){const m={ERROR:0,PENDING:1,SERVER_ACK:2,DELIVERY_ACK:3,READ:4
 refreshStatus=async function(){
   const list=RC();let updated=0,falhas=0,tentados=0;
   for(const c of list){
-    if(!c.msgId||c.status==='error'||c.status==='pending'||c.status==='read'||c.status==='clicked')continue;
+    if(!c.msgId||c.status==='error'||c.status==='pending'||c.status==='read')continue;
     tentados++;
     try{
       const r=await api('/chat/findMessages/{i}','POST',{where:{key:{id:c.msgId}}});
