@@ -306,8 +306,7 @@ tr:last-child td{border-bottom:0}
   <div class="stat-grid">
     <div class="stat-box"><div class="stat-n g" id="dSent">0</div><div class="stat-l">Enviados</div></div>
     <div class="stat-box"><div class="stat-n b" id="dDel">0</div><div class="stat-l">Entregues</div></div>
-    <div class="stat-box"><div class="stat-n" style="color:#f97316" id="dClick">0</div><div class="stat-l">Clicaram</div></div>
-    <div class="stat-box"><div class="stat-n r" id="dErr">0</div><div class="stat-l">Erros</div></div>
+        <div class="stat-box"><div class="stat-n r" id="dErr">0</div><div class="stat-l">Erros</div></div>
     <div class="stat-box"><div class="stat-n a" id="dSess">0</div><div class="stat-l" title="Cada conclusão ou rodada registrada do envio">Rodadas</div></div>
   </div>
   <div class="dash-note" id="dashNote"></div>
@@ -341,21 +340,25 @@ tr:last-child td{border-bottom:0}
 
 <!-- CONFIG -->
 <div class="pn" id="p-cfg">
-  <h2 class="pn-t">Conexão</h2><p class="pn-d">Confira se o WhatsApp está conectado. Se mudar a URL do tunel, atualize o campo abaixo.</p>
+  <h2 class="pn-t">Conexão</h2><p class="pn-d">Clique em <strong>Testar conexão</strong> para conferir se o WhatsApp está ligado. Se der erro, abra o Docker Desktop, espere ele iniciar e tente de novo.</p>
   <div class="act-grid"><button class="btn btn-pri" onclick="testApi()">Testar conexão</button></div>
   <div id="apiResult" class="mt"></div>
-  <div class="card mt">
-    <label>Endereço do tunel (muda cada vez que reiniciar o Cloudflare)</label>
-    <input type="text" id="apiUrl" value="https://sacrifice-tested-options-continue.trycloudflare.com">
-    <input type="hidden" id="apiInstance" value="senar">
-    <input type="hidden" id="apiKey" value="SuaSenhaForteAqui123">
-    <input type="hidden" id="shortKey" value="">
-    <input type="hidden" id="shortDomain" value="">
-    <input type="hidden" id="shortProxy" value="">
-    <div class="act-grid mt"><button class="btn btn-out" onclick="saveCfg()">Salvar</button></div>
-    <div class="hint mt">Instancia: senar | Chave: configurada | Conexao criptografada via HTTPS</div>
+  <details class="adv">
+    <summary>Ajustes de conexão (normalmente não precisa mexer)</summary>
+    <div class="row mt"><div><label>Endereço do servidor</label><input type="text" id="apiUrl"></div><div><label>Nome da instância</label><input type="text" id="apiInstance"></div></div>
+    <div class="mt"><label>Chave de acesso (API Key)</label><input type="password" id="apiKey"></div>
+  </details>
+  <div class="card mt" style="background:var(--sf)">
+    <div class="card-t" style="font-size:.9rem">Rastreamento de cliques</div>
+    <div class="card-d">O ZapFlow cria um link curto para cada pessoa e mostra no relatório quem abriu a pesquisa e a cidade aproximada do clique. Isso confirma a abertura do link, não a conclusão do formulário.</div>
+    <div class="row"><div><label>Chave PÚBLICA do Short.io</label><input type="password" id="shortKey"></div><div><label>Domínio do Short.io</label><input type="text" id="shortDomain"></div></div>
+    <div class="mt"><label>Endereço do proxy de cliques</label><input type="text" id="shortProxy"><div class="hint">O proxy consulta o Short.io usando a chave secreta sem expô-la nesta página. Ele precisa estar ativo para o botão “Atualizar informações” funcionar.</div></div>
+    <button class="btn btn-out btn-sm mt" onclick="testShort()">Testar Short.io</button>
+    <div id="shortResult" class="mt"></div>
+    <details class="adv"><summary>Detalhes técnicos</summary><div class="hint">Aqui vai a chave PÚBLICA (pk_...). Para contar os cliques no relatório, a chave secreta fica no proxy local (pasta shortio-proxy, porta 8081), nunca neste arquivo.</div></details>
   </div>
-  <div id="shortResult" class="hidden"></div>
+  <div class="act-grid mt"><button class="btn btn-out" onclick="saveCfg()">Salvar configuração</button></div>
+  <div class="hint">As alterações nestes campos são salvas automaticamente.</div>
 </div>
 
 <!-- CONTACTS -->
@@ -424,7 +427,7 @@ tr:last-child td{border-bottom:0}
   </div>
   <details class="adv">
     <summary>Ajustes de velocidade (normalmente não precisa mexer)</summary>
-    <div class="row mt"><div><label>Esperar no mínimo (segundos)</label><input type="number" id="minD" value="30" min="10"></div><div><label>Esperar no máximo (segundos)</label><input type="number" id="maxD" value="60" min="15"></div><div><label>Mensagens por lote</label><input type="number" id="lim" value="30" min="5" max="100"></div></div>
+    <div class="row mt"><div><label>Esperar no mínimo (segundos)</label><input type="number" id="minD" value="15" min="10"></div><div><label>Esperar no máximo (segundos)</label><input type="number" id="maxD" value="30" min="15"></div><div><label>Mensagens por lote</label><input type="number" id="lim" value="30" min="5" max="100"></div></div>
     <div class="hint">O tempo de espera é sorteado entre o mínimo e o máximo. Diminuir esses valores aumenta o risco de bloqueio do número.</div>
   </details>
   <div class="hint" id="etaNote"></div>
@@ -462,19 +465,17 @@ tr:last-child td{border-bottom:0}
   <div class="stat-grid" style="grid-template-columns:repeat(3,1fr)">
     <div class="stat-box"><div class="stat-n g" id="rS">0</div><div class="stat-l">Enviados</div></div>
     <div class="stat-box"><div class="stat-n b" id="rD">0</div><div class="stat-l">Entregues</div></div>
-    <div class="stat-box"><div class="stat-n" style="color:#f97316" id="rCl">0</div><div class="stat-l">Clicaram</div></div>
-    <div class="stat-box"><div class="stat-n r" id="rE">0</div><div class="stat-l">Erros</div></div>
+        <div class="stat-box"><div class="stat-n r" id="rE">0</div><div class="stat-l">Erros</div></div>
     <div class="stat-box"><div class="stat-n gr" id="rP">0</div><div class="stat-l">Pendentes</div></div>
   </div>
   <div class="filter-row">
     <button class="filter-btn on" onclick="filterRpt('all',this)">Todos</button>
     <button class="filter-btn" onclick="filterRpt('sent',this)">Enviados</button>
     <button class="filter-btn" onclick="filterRpt('delivered',this)">Entregues</button>
-    <button class="filter-btn" onclick="filterRpt('clicked',this)">Clicaram</button>
-    <button class="filter-btn" onclick="filterRpt('error',this)">Erros</button>
+        <button class="filter-btn" onclick="filterRpt('error',this)">Erros</button>
     <button class="filter-btn" onclick="filterRpt('pending',this)">Pendentes</button>
   </div>
-  <div class="tbl-w" style="max-height:300px"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Status</th><th>Cliques</th><th>Hora</th><th>Detalhe</th></tr></thead><tbody id="rb"></tbody></table></div>
+  <div class="tbl-w" style="max-height:300px"><table><thead><tr><th>Nome</th><th>Telefone</th><th>Status</th><th>Hora</th><th>Detalhe</th></tr></thead><tbody id="rb"></tbody></table></div>
 </div>
 
 </main>
@@ -504,7 +505,7 @@ let contacts=[],idx=0,sesSent=0,errors=0,tmInt=null,sending=false,paused=false,l
 // STORAGE
 function saveHist(s,e){try{let h=JSON.parse(localStorage.getItem('zf_h')||'[]');const cid=String(activeCampId||'legacy');h.unshift({d:new Date().toLocaleDateString('pt-BR'),t:new Date().toLocaleTimeString('pt-BR'),s,e,sid,campId:activeCampId});if(h.length>50)h=h.slice(0,50);localStorage.setItem('zf_h',JSON.stringify(h));let st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');st.s+=s;st.e+=e;st.n++;st.byCamp=st.byCamp||{};st.byCamp[cid]=st.byCamp[cid]||{s:0,e:0,n:0};st.byCamp[cid].s+=s;st.byCamp[cid].e+=e;st.byCamp[cid].n++;localStorage.setItem('zf_st',JSON.stringify(st));let dy=JSON.parse(localStorage.getItem('zf_dy')||'{}');const td=new Date().toLocaleDateString('pt-BR');dy[td]=(dy[td]||0)+s;localStorage.setItem('zf_dy',JSON.stringify(dy))}catch(x){}}
 function saveCfg(){try{localStorage.setItem('zf_cfg',JSON.stringify({u:document.getElementById('apiUrl').value,i:document.getElementById('apiInstance').value,k:document.getElementById('apiKey').value}));toast('Salvo!')}catch(x){}}
-function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){if(c.u)document.getElementById('apiUrl').value=c.u;if(c.i)document.getElementById('apiInstance').value=c.i;if(c.k)document.getElementById('apiKey').value=c.k}}catch(x){}}
+function loadCfg(){try{const c=JSON.parse(localStorage.getItem('zf_cfg'));if(c){document.getElementById('apiUrl').value=c.u;document.getElementById('apiInstance').value=c.i;document.getElementById('apiKey').value=c.k}}catch(x){}}
 function loadDash(){try{
   const st=JSON.parse(localStorage.getItem('zf_st')||'{"s":0,"e":0,"n":0,"d":0,"r":0}');
   document.getElementById('dSent').textContent=st.s;document.getElementById('dErr').textContent=st.e;document.getElementById('dSess').textContent=st.n;
@@ -578,7 +579,7 @@ document.getElementById('lnk').addEventListener('input',updPrev);
 function ins(v){const t=document.getElementById('tpl'),s=t.selectionStart,e=t.selectionEnd;t.value=t.value.substring(0,s)+v+t.value.substring(e);t.selectionStart=t.selectionEnd=s+v.length;t.focus();updPrev()}
 
 // SEND
-function showCur(){while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;const lm=+document.getElementById('lim').value||30;if(idx>=contacts.length||sesSent>=lm){document.getElementById('sendCard').classList.add('hidden');document.getElementById('doneCard').classList.remove('hidden');document.getElementById('dT').textContent=sesSent>=lm?'Limite atingido!':'Todos processados!';const errC=contacts.filter(c=>c.status==='error').length;document.getElementById('dM').textContent=sesSent+' enviados, '+errC+' erros.';sending=false;if(sesSent>0)saveHist(sesSent-errC,errC);saveCur();return}document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);updProg()}
+function showCur(){while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;const lm=+document.getElementById('lim').value||30;if(idx>=contacts.length||sesSent>=lm){document.getElementById('sendCard').classList.add('hidden');document.getElementById('doneCard').classList.remove('hidden');document.getElementById('dT').textContent=sesSent>=lm?'Limite atingido!':'Todos processados!';const errC=contacts.filter(c=>c.status==='error').length;document.getElementById('dM').textContent=sesSent+' enviados, '+errC+' erros.';sending=false;if(sesSent>0)saveHist(sesSent-errC,errC);saveCur();refreshUI();return}document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);updProg()}
 async function startSending(){if(!contacts.length){toast('Importe contatos','err');return}sending=true;paused=false;document.getElementById('ctrlN').classList.add('hidden');document.getElementById('ctrlR').classList.remove('hidden');document.getElementById('sl').textContent=document.getElementById('lim').value;processNext()}
 async function handleStartClick(){
   if(SCH.mode==='now'){startSending();return}
@@ -588,11 +589,11 @@ async function handleStartClick(){
   addLog('Agendamento salvo. Aguardando o horário programado.','ok');
   toast('Agendamento salvo. O disparo acontecerá no horário programado.');
 }
-async function processNext(){if(!sending||paused)return;while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;const lm=+document.getElementById('lim').value||30;if(idx>=contacts.length||sesSent>=lm){sending=false;showCur();return}const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);document.getElementById('aLbl').textContent='Enviando para '+c.nome+'...';document.getElementById('tmN').textContent='...';
+async function processNext(){if(!sending||paused)return;while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;const lm=+document.getElementById('lim').value||30;if(idx>=contacts.length||sesSent>=lm){sending=false;showCur();return}const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);document.getElementById('aLbl').textContent='Enviando para '+c.nome+'...';document.getElementById('tmN').textContent='';
 try{const msg=buildMsg(c);const r=await sendMsg(c.telefone,msg);if(r.key||r.status==='PENDING'||r.messageId||(r.message&&!r.error)){c.status='sent';c.time=now();c.detail='OK';c.msgId=r.key?.id||r.messageId||null;sesSent++;addLog('Enviado: '+c.nome,'ok')}else{c.status='error';c.time=now();c.detail=r.response?.message||r.message||JSON.stringify(r).slice(0,80);sesSent++;errors++;addLog('Erro: '+c.nome+' — '+c.detail,'er')}}catch(e){c.status='error';c.time=now();c.detail=e.message;sesSent++;errors++;addLog('Erro: '+c.nome+' — '+e.message,'er')}idx++;updProg();if(!sending)return;
-const mn=+document.getElementById('minD').value||30,mx=+document.getElementById('maxD').value||60;let secs=Math.floor(Math.random()*(mx-mn+1))+mn;if(sesSent%10===0&&sesSent>0){secs=Math.max(secs,180);addLog('Pausa de segurança','w')}document.getElementById('aLbl').textContent='Próximo em';document.getElementById('tmN').textContent=secs;clearInterval(tmInt);tmInt=setInterval(()=>{secs--;document.getElementById('tmN').textContent=secs;if(secs<=0){clearInterval(tmInt);if(sending&&!paused)processNext()}},1000)}
+const mn=+document.getElementById('minD').value||30,mx=+document.getElementById('maxD').value||60;let secs=Math.floor(Math.random()*(mx-mn+1))+mn;if(sesSent%15===0&&sesSent>0){secs=Math.max(secs,60);addLog('Pausa de segurança','w')}document.getElementById('aLbl').textContent='Próximo em';document.getElementById('tmN').textContent=secs;clearInterval(tmInt);tmInt=setInterval(()=>{secs--;document.getElementById('tmN').textContent=secs;if(secs<=0){clearInterval(tmInt);if(sending&&!paused)processNext()}},1000)}
 function pauseSending(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'Continuar':'Pausar';if(!paused)processNext();else{clearInterval(tmInt);addLog('Pausado','w')}}
-function stopSending(){sending=false;paused=false;clearInterval(tmInt);document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');addLog('Parado','w');showCur()}
+function stopSending(){sending=false;paused=false;clearInterval(tmInt);document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');addLog('Parado','w');saveCur();refreshUI();showCur()}
 function retryErrors(){const errs=contacts.filter(c=>c.status==='error');if(!errs.length){toast('Sem erros para reenviar');return}errs.forEach(c=>{c.status='pending';c.detail='';c.time='';c.msgId=null});idx=0;sesSent=0;errors=0;document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');go('send');showCur();toast(errs.length+' contatos prontos para reenvio');addLog(errs.length+' erros marcados para reenvio','w')}
 function resetSess(){sesSent=0;errors=0;contacts.forEach(c=>{if(c.status!=='sent'&&c.status!=='delivered'&&c.status!=='read')c.status='pending'});idx=0;document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');go('send');showCur()}
 function updProg(){const sent=contacts.filter(x=>x.status==='sent'||x.status==='delivered'||x.status==='read').length;const err=contacts.filter(x=>x.status==='error').length;const pend=contacts.filter(x=>x.status==='pending').length;const del=contacts.filter(x=>x.status==='delivered').length;const rd=contacts.filter(x=>x.status==='read').length;const pct=contacts.length?((sent+err)/contacts.length)*100:0;document.getElementById('pf').style.width=pct+'%';document.getElementById('ns').textContent=sent;document.getElementById('nd').textContent=del;document.getElementById('nr').textContent=rd;document.getElementById('ne').textContent=err;document.getElementById('ss').textContent=sesSent}
@@ -734,9 +735,24 @@ loadCfg=function(){
   }catch(x){}
 };
 
-// Override sendMsg - envio direto sem Short.io
+// Override sendMsg to generate short links
 const origSendMsg=sendMsg;
 sendMsg=async function(phone,text){
+  const shortKey=document.getElementById('shortKey').value;
+  const lnk=document.getElementById('lnk').value;
+  const c=contacts.find(x=>x.telefone===phone&&x.status==='pending');
+  if(!shortKey||!lnk)throw new Error('Configure a chave pública e o domínio do Short.io para gerar o link curto e rastrear cliques');
+  if(c){
+    const sl=await createShortLink(lnk,c.nome+' - '+c.curso);
+    if(sl.url){
+      text=text.replace(lnk,sl.url);
+      c.shortUrl=sl.url;
+      c.shortId=sl.id||clickLinkId(c);
+      c.clicks=0;
+    }else{
+      throw new Error('Short.io não criou o link para '+c.nome+': '+(sl.error||'verifique a configuração'));
+    }
+  }
   if(imageB64){return api('/message/sendMedia/{i}','POST',{number:phone,mediatype:'image',mimetype:imageMime,fileName:imageName||'banner',caption:text,media:rawB64()})}
   return api('/message/sendText/{i}','POST',{number:phone,text});
 };
@@ -745,7 +761,7 @@ sendMsg=async function(phone,text){
 const origRenderRpt=renderRpt;
 renderRpt=function(){
   const s=contacts.filter(x=>x.status==='sent').length,d=contacts.filter(x=>x.status==='delivered').length,r=contacts.filter(x=>x.status==='read').length,e=contacts.filter(x=>x.status==='error').length,p=contacts.filter(x=>x.status==='pending').length,cl=contacts.filter(x=>x.status==='clicked').length;
-  document.getElementById('rS').textContent=s;document.getElementById('rD').textContent=d;document.getElementById('rE').textContent=e;document.getElementById('rP').textContent=p;document.getElementById('rCl').textContent=cl;
+  document.getElementById('rS').textContent=s;document.getElementById('rD').textContent=d;document.getElementById('rE').textContent=e;document.getElementById('rP').textContent=p;
   filterRpt(curFilter);
 };
 
@@ -774,7 +790,7 @@ function loadCampaigns(){
 function saveCampaigns(){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns.slice(0,50)))}catch(x){}}
 function activeCampaign(){return allCampaignsView?null:(campaigns.find(c=>String(c.id)===String(activeCampId))||null)}
 function syncActiveCampaign(){const c=activeCampaign();if(!c)return;c.contacts=JSON.parse(JSON.stringify(contacts));c.sid=sid||c.sid||Date.now();c.updatedAt=Date.now();saveCampaigns()}
-function campaignLabel(c){const k=counts(c.contacts||[]);return 'Enviados '+k.enviados+' · Entregues '+k.entregues+' · Cliques '+k.cliques+' · Erros '+k.erros+' · Pendentes '+k.pend}
+function campaignLabel(c){const k=counts(c.contacts||[]);return 'Enviados '+k.enviados+' · Entregues '+k.entregues+' · Erros '+k.erros+' · Pendentes '+k.pend}
 function renderCampaigns(){
   const sel=byId('campSel'),list=byId('campList'),info=byId('campInfo');if(!sel||!list)return;
   sel.innerHTML='<option value="__all__">Todas as campanhas</option>'+(campaigns.length?campaigns.map(c=>'<option value="'+attr(c.id)+'">'+esc(c.name)+'</option>').join(''):'<option value="">Nenhuma campanha cadastrada</option>');
@@ -792,7 +808,7 @@ function renderCampaigns(){
     }
   }
   const sp=byId('scheduledCampaigns'),pending=campaigns.filter(scheduledPending);if(sp)sp.innerHTML=pending.length?pending.map(c=>'<div class="scheduled-item"><div class="scheduled-main"><strong>'+esc(c.name)+'</strong><small>Disparo previsto para '+esc(scheduledLabel(c.schedule))+'</small></div><span class="scheduled-badge">Pendente</span></div>').join(''):'<div class="dash-empty">Nenhum lote agendado.</div>';
-  list.innerHTML=campaigns.length?campaigns.map(c=>{const k=counts(c.contacts||[]);return '<div class="campaign-item"><div class="campaign-main"><strong>'+esc(c.name)+'</strong><small>Criada em '+fmtDt(c.createdAt)+'</small><div class="campaign-metrics"><span>Enviados <b>'+k.enviados+'</b></span><span>Entregues <b>'+k.entregues+'</b></span><span>Cliques <b>'+k.cliques+'</b></span><span>Erros <b>'+k.erros+'</b></span><span>Pendentes <b>'+k.pend+'</b></span></div></div><button class="btn btn-sm campaign-delete" style="background:var(--red-p);color:var(--red)" onclick="deleteCampaign(\''+String(c.id).replace(/'/g,'')+'\')">Excluir</button></div>'}).join(''):'<div class="dash-empty">Nenhuma campanha cadastrada.</div>';
+  list.innerHTML=campaigns.length?campaigns.map(c=>{const k=counts(c.contacts||[]);return '<div class="campaign-item"><div class="campaign-main"><strong>'+esc(c.name)+'</strong><small>Criada em '+fmtDt(c.createdAt)+'</small><div class="campaign-metrics"><span>Enviados <b>'+k.enviados+'</b></span><span>Entregues <b>'+k.entregues+'</b></span><span>Erros <b>'+k.erros+'</b></span><span>Pendentes <b>'+k.pend+'</b></span></div></div><button class="btn btn-sm campaign-delete" style="background:var(--red-p);color:var(--red)" onclick="deleteCampaign(\''+String(c.id).replace(/'/g,'')+'\')">Excluir</button></div>'}).join(''):'<div class="dash-empty">Nenhuma campanha cadastrada.</div>';
 }
 function createCampaign(){
   const name=byId('campName').value.trim();if(!name){toast('Digite o nome da campanha','err');return}
@@ -858,8 +874,10 @@ const _parseCSV=parseCSV;
 parseCSV=function(t){_parseCSV(t);sid=Date.now();viewObj=null;saveCur()};
 const _clearAll=clearAll;
 clearAll=function(){_clearAll();sid=null;viewObj=null;try{localStorage.removeItem('zf_cur')}catch(x){}};
+let _saveTimer=null;
+function debounceSave(){if(_saveTimer)return;_saveTimer=setTimeout(()=>{_saveTimer=null;saveCur()},5000)}
 const _updProg=updProg;
-updProg=function(){_updProg.apply(this,arguments);saveCur()};
+updProg=function(){_updProg.apply(this,arguments);if(sending)debounceSave();else saveCur();};
 const _go=go;
 go=function(n){if(n!=='rpt')viewObj=null;_go(n)};
 window.addEventListener('beforeunload',()=>{if(!viewObj)saveCur()});
@@ -875,13 +893,13 @@ function fillSessSel(){
   sel.innerHTML='<option value="cur">Envio atual ('+contacts.length+' contatos)</option>'+others.map(x=>'<option value="'+x.sid+'">'+esc(fmtDt(x.sid))+' — '+esc(courseLabel(x.contacts))+' ('+x.contacts.length+')</option>').join('');
   sel.value=viewObj?String(viewObj.sid):'cur';
   const bn=byId('viewBanner');
-  if(viewObj){bn.classList.remove('hidden');bn.innerHTML='Você está vendo o envio de <strong>'+esc(fmtDt(viewObj.sid))+'</strong>. Dá para atualizar status e cliques, mas não reenviar. <button class="btn btn-out btn-sm" style="margin-left:6px" onclick="openSess(\'cur\')">Voltar ao envio atual</button>'}
+  if(viewObj){bn.classList.remove('hidden');bn.innerHTML='Você está vendo o envio de <strong>'+esc(fmtDt(viewObj.sid))+'</strong>. Dá para atualizar status, mas não reenviar. <button class="btn btn-out btn-sm" style="margin-left:6px" onclick="openSess(\'cur\')">Voltar ao envio atual</button>'}
   else bn.classList.add('hidden');
 }
 renderRpt=function(){
   const k=counts(RC());
   byId('rS').textContent=k.enviados;byId('rD').textContent=k.entregues;
-  byId('rCl').textContent=k.cliques;byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
+  byId('rE').textContent=k.erros;byId('rP').textContent=k.pend;
   fillSessSel();filterRpt(curFilter);
   if(!viewObj)saveCur();
 };
@@ -961,7 +979,7 @@ async function refreshAllInfo(){
 const emptyBox=t=>'<div class="dash-empty">'+t+'</div>';
 function renderFunnel(k){
   if(!k.enviados&&!k.erros){byId('chFunnel').innerHTML=emptyBox('Aparece depois do primeiro envio.');return}
-  const rows=[['Enviados',k.enviados,SC.sent],['Entregues',k.entregues,SC.delivered],['Clicaram',k.cliques,SC.clicked]],base=Math.max(k.enviados,1);
+  const rows=[['Enviados',k.enviados,SC.sent],['Entregues',k.entregues,SC.delivered]],base=Math.max(k.enviados,1);
   byId('chFunnel').innerHTML=rows.map(r=>'<div class="fn-row"><div class="fn-l">'+r[0]+'</div><div class="fn-bar"><div style="width:'+(r[1]?Math.max(r[1]/base*100,3):0)+'%;background:'+r[2]+'"></div></div><div class="fn-v">'+r[1]+' <span>'+(k.enviados?Math.round(r[1]/k.enviados*100):0)+'%</span></div></div>').join('')+'<div class="fn-note">Erros: '+k.erros+' · Pendentes: '+k.pend+'</div>';
 }
 function renderDonut(all){
@@ -992,7 +1010,7 @@ function renderCourses(all){
   const html=rows.map(([nome,l])=>{
     const t=l.length,k=counts(l);
     const seg=ORDER.map(st=>{const n=l.filter(c=>c.status===st).length;return n?'<div title="'+ST[st]+': '+n+'" style="width:'+(n/t*100)+'%;background:'+SC[st]+'"></div>':''}).join('');
-    return '<div class="cr"><div class="cr-h"><span title="'+attr(nome)+'">'+esc(nome.length>56?nome.slice(0,56)+'…':nome)+'</span><b>'+t+' contatos</b></div><div class="cr-bar">'+seg+'</div><div class="cr-s">Enviados '+k.enviados+' · Entregues '+k.entregues+' · Clicaram '+k.cliques+' · Erros '+k.erros+'</div></div>';
+    return '<div class="cr"><div class="cr-h"><span title="'+attr(nome)+'">'+esc(nome.length>56?nome.slice(0,56)+'…':nome)+'</span><b>'+t+' contatos</b></div><div class="cr-bar">'+seg+'</div><div class="cr-s">Enviados '+k.enviados+' · Entregues '+k.entregues+' · Erros '+k.erros+'</div></div>';
   }).join('');
   byId('chCourse').innerHTML=html+'<div class="legend-row">'+ORDER.map(k=>'<span><i style="background:'+SC[k]+'"></i>'+ST[k]+'</span>').join('')+'</div>';
 }
@@ -1013,10 +1031,10 @@ loadDash=function(){
     if(byId('dashTitle'))byId('dashTitle').textContent=!hasCampaigns?'Início':allCampaignsView?'Início — Todas as campanhas':camp?'Início — '+camp.name:'Início';
     if(byId('dashSub'))byId('dashSub').textContent=!hasCampaigns?'Nenhuma campanha cadastrada.':allCampaignsView?'Acompanhamento consolidado de todas as campanhas.':camp?'Acompanhamento da campanha ativa.':'Selecione uma campanha para acompanhar o andamento.';
     byId('dSent').textContent=camp||allCampaignsView?k.enviados:Math.max(st.s||0,k.enviados);
-    byId('dDel').textContent=k.entregues;byId('dClick').textContent=k.cliques;
+    byId('dDel').textContent=k.entregues;
     byId('dErr').textContent=camp||allCampaignsView?k.erros:Math.max(st.e||0,k.erros);
     byId('dSess').textContent=allCampaignsView?campaigns.length:camp?(all.some(x=>x.status&&x.status!=='pending')?1:0):h.filter(x=>x.s>0||x.e>0).length;
-    byId('dashNote').textContent=!hasCampaigns?'Cadastre uma campanha para começar.':allCampaignsView?'Indicadores consolidados de todas as campanhas.':camp?'Indicadores, contatos e cliques da campanha ativa.':'Selecione uma campanha para ver os indicadores do lote.';
+    byId('dashNote').textContent=!hasCampaigns?'Cadastre uma campanha para começar.':allCampaignsView?'Indicadores consolidados de todas as campanhas.':camp?'Indicadores e contatos da campanha ativa.':'Selecione uma campanha para ver os indicadores do lote.';
     renderFunnel(k);renderDonut(all);renderDays();renderCourses(all);renderHist(camp||allCampaignsView?[]:h,camp||allCampaignsView?[]:sess);
   }catch(x){console.error(x)}
 };
@@ -1129,7 +1147,8 @@ function refreshUI(){
   }catch(x){console.error(x)}
 }
 const _go4=go;go=function(n){_go4(n);refreshUI()};
-const _up4=updProg;updProg=function(){_up4.apply(this,arguments);refreshUI()};
+let _uiTimer=null;
+const _up4=updProg;updProg=function(){_up4.apply(this,arguments);if(sending){if(!_uiTimer)_uiTimer=setTimeout(()=>{_uiTimer=null;try{renderPreflight();updTabs()}catch(x){}},3000)}else refreshUI()};
 const _ca4=clearAll;clearAll=function(){_ca4();syncActiveCampaign();saveCur();refreshUI()};
 const _rt4=renderTbl;renderTbl=function(){_rt4();impSummary();refreshUI()};
 const _sc4=showCur;
@@ -1368,7 +1387,7 @@ function initSched(){
 }
 
 setWaStatus(false,'');
-initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();saveCfg();loadDash();refreshUI();checkConn();initSched();
+initCampaigns();restoreCur();loadCampaignSchedule(activeCampaign());initSteps();loadCfg();loadDash();refreshUI();checkConn();initSched();
 </script>
 </body>
 </html>
