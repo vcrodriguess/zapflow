@@ -565,11 +565,11 @@ function esc(s){const d=document.createElement('div');d.textContent=s;return d.i
 
 // MSG
 document.getElementById('tpl').value='';
-function setMode(m,el){document.querySelectorAll('.tog-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');if(m==='corp')document.getElementById('tpl').value=MSGS.corp;else if(m==='emoji')document.getElementById('tpl').value=MSGS.emoji;else{if(!MSGS.custom)MSGS.custom=document.getElementById('tpl').value;document.getElementById('tpl').value=MSGS.custom}updPrev()}
+function setMode(m,el){document.querySelectorAll('.tog-btn').forEach(b=>b.classList.remove('on'));el.classList.add('on');if(m==='corp')document.getElementById('tpl').value=MSGS.corp;else if(m==='emoji')document.getElementById('tpl').value=MSGS.emoji;else{if(!MSGS.custom)MSGS.custom=document.getElementById('tpl').value;document.getElementById('tpl').value=MSGS.custom}updPrev();if(typeof debounceSave==='function')debounceSave()}
 function buildMsg(c){const t=document.getElementById('tpl').value,l=document.getElementById('lnk').value;return t.replace(/\{nome\}/g,c.nome).replace(/\{curso\}/g,c.curso).replace(/\{protocolo\}/g,c.protocolo).replace(/\{link\}/g,l)}
 function updPrev(){document.getElementById('prev').textContent=contacts.length?buildMsg(contacts[0]):''}
 document.getElementById('tpl').addEventListener('input',function(){MSGS.custom=this.value;updPrev()});
-document.getElementById('lnk').addEventListener('input',updPrev);
+document.getElementById('lnk').addEventListener('input',function(){updPrev();if(typeof debounceSave==='function')debounceSave()});
 function ins(v){const t=document.getElementById('tpl'),s=t.selectionStart,e=t.selectionEnd;t.value=t.value.substring(0,s)+v+t.value.substring(e);t.selectionStart=t.selectionEnd=s+v.length;t.focus();updPrev()}
 
 // SEND
@@ -583,9 +583,21 @@ async function handleStartClick(){
   addLog('Agendamento salvo. Aguardando o horário programado.','ok');
   toast('Agendamento salvo. O disparo acontecerá no horário programado.');
 }
-async function processNext(){if(!sending||paused)return;while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;const lm=+document.getElementById('lim').value||30;if(idx>=contacts.length||sesSent>=lm){sending=false;showCur();return}const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);document.getElementById('aLbl').textContent='Enviando para '+c.nome+'...';document.getElementById('tmN').textContent='';
-try{const msg=buildMsg(c);const r=await sendMsg(c.telefone,msg);if(r.key||r.status==='PENDING'||r.messageId||(r.message&&!r.error)){c.status='sent';c.time=now();c.detail='OK';c.msgId=r.key?.id||r.messageId||null;sesSent++;addLog('Enviado: '+c.nome,'ok')}else{c.status='error';c.time=now();c.detail=r.response?.message||r.message||JSON.stringify(r).slice(0,80);sesSent++;errors++;addLog('Erro: '+c.nome+' — '+c.detail,'er')}}catch(e){c.status='error';c.time=now();c.detail=e.message;sesSent++;errors++;addLog('Erro: '+c.nome+' — '+e.message,'er')}idx++;updProg();if(!sending)return;
-const mn=+document.getElementById('minD').value||30,mx=+document.getElementById('maxD').value||60;let secs=Math.floor(Math.random()*(mx-mn+1))+mn;if(sesSent%15===0&&sesSent>0){secs=Math.max(secs,60);addLog('Pausa de segurança','w')}document.getElementById('aLbl').textContent='Próximo em';document.getElementById('tmN').textContent=secs;clearInterval(tmInt);tmInt=setInterval(()=>{secs--;document.getElementById('tmN').textContent=secs;if(secs<=0){clearInterval(tmInt);if(sending&&!paused)processNext()}},1000)}
+async function processNext(){
+  if(!sending||paused)return;
+  while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;
+  const lm=+document.getElementById('lim').value||30;
+  if(idx>=contacts.length||sesSent>=lm){sending=false;showCur();return}
+  const c=contacts[idx];document.getElementById('av').textContent=(c.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=c.nome;document.getElementById('sk').textContent=c.telefone+' — '+c.curso;document.getElementById('sb').textContent=buildMsg(c);document.getElementById('aLbl').textContent='Enviando para '+c.nome+'...';document.getElementById('tmN').textContent='';
+  let ok=false;
+  try{const msg=buildMsg(c),r=await sendMsg(c.telefone,msg);if(r.key||r.status==='PENDING'||r.messageId||(r.message&&!r.error)){c.status='sent';c.time=now();c.detail='OK';c.msgId=r.key?.id||r.messageId||null;ok=true;addLog('Enviado: '+c.nome,'ok')}else{c.status='error';c.time=now();c.detail=r.response?.message||r.message||JSON.stringify(r).slice(0,80);addLog('Erro: '+c.nome+' — '+c.detail,'er')}}catch(e){c.status='error';c.time=now();c.detail=e.message;addLog('Erro: '+c.nome+' — '+e.message,'er')}
+  sesSent++;if(!ok)errors++;idx++;updProg();saveCur();
+  if(!sending)return;
+  while(idx<contacts.length&&contacts[idx].status!=='pending')idx++;
+  if(idx>=contacts.length||sesSent>=lm){sending=false;showCur();return}
+  const next=contacts[idx];document.getElementById('av').textContent=(next.nome||'?')[0].toUpperCase();document.getElementById('sn').textContent=next.nome;document.getElementById('sk').textContent=next.telefone+' — '+next.curso;document.getElementById('sb').textContent=buildMsg(next);
+  const mn=+document.getElementById('minD').value||30,mx=+document.getElementById('maxD').value||60;let secs=Math.floor(Math.random()*(mx-mn+1))+mn;if(sesSent%15===0&&sesSent>0){secs=Math.max(secs,60);addLog('Pausa de segurança','w')}document.getElementById('aLbl').textContent='Próximo em';document.getElementById('tmN').textContent=secs;clearInterval(tmInt);tmInt=setInterval(()=>{secs--;document.getElementById('tmN').textContent=secs;if(secs<=0){clearInterval(tmInt);if(sending&&!paused)processNext()}},1000)
+}
 function pauseSending(){paused=!paused;document.getElementById('pauseBtn').textContent=paused?'Continuar':'Pausar';if(!paused)processNext();else{clearInterval(tmInt);addLog('Pausado','w')}}
 function stopSending(){sending=false;paused=false;clearInterval(tmInt);document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');addLog('Parado','w');saveCur();refreshUI();showCur()}
 function retryErrors(){const errs=contacts.filter(c=>c.status==='error');if(!errs.length){toast('Sem erros para reenviar');return}errs.forEach(c=>{c.status='pending';c.detail='';c.time='';c.msgId=null});idx=0;sesSent=0;errors=0;document.getElementById('sendCard').classList.remove('hidden');document.getElementById('doneCard').classList.add('hidden');document.getElementById('ctrlN').classList.remove('hidden');document.getElementById('ctrlR').classList.add('hidden');go('send');showCur();toast(errs.length+' contatos prontos para reenvio');addLog(errs.length+' erros marcados para reenvio','w')}
@@ -754,7 +766,7 @@ function loadCampaigns(){
 }
 function saveCampaigns(){try{localStorage.setItem(CAMP_KEY,JSON.stringify(campaigns.slice(0,50)))}catch(x){}}
 function activeCampaign(){return allCampaignsView?null:(campaigns.find(c=>String(c.id)===String(activeCampId))||null)}
-function syncActiveCampaign(){const c=activeCampaign();if(!c)return;c.contacts=JSON.parse(JSON.stringify(contacts));c.sid=sid||c.sid||Date.now();c.updatedAt=Date.now();saveCampaigns()}
+function syncActiveCampaign(){const c=activeCampaign();if(!c)return;c.contacts=JSON.parse(JSON.stringify(contacts));c.message=byId('tpl')?.value||'';c.link=byId('lnk')?.value||'';c.image={data:imageB64||null,mime:imageMime||null,name:imageName||''};c.sid=sid||c.sid||Date.now();c.updatedAt=Date.now();saveCampaigns()}
 function campaignLabel(c){const k=counts(c.contacts||[]);return 'Enviados '+k.enviados+' · Entregues '+k.entregues+' · Erros '+k.erros+' · Pendentes '+k.pend}
 function renderCampaigns(){
   const sel=byId('campSel'),list=byId('campList'),info=byId('campInfo');if(!sel||!list)return;
@@ -785,7 +797,7 @@ function selectCampaign(id){
   if(!id)return;
   allCampaignsView=false;
   syncActiveCampaign();const c=campaigns.find(x=>String(x.id)===String(id));if(!c)return;
-  activeCampId=String(c.id);loadCampaignSchedule(c);contacts=JSON.parse(JSON.stringify(c.contacts||[]));sid=c.sid||Date.now();viewObj=null;idx=0;sesSent=0;errors=0;
+  activeCampId=String(c.id);loadCampaignSchedule(c);contacts=JSON.parse(JSON.stringify(c.contacts||[]));sid=c.sid||Date.now();viewObj=null;idx=0;sesSent=0;errors=0;byId('tpl').value=c.message||'';byId('lnk').value=c.link||'';if(c.image&&c.image.data){imageB64=c.image.data;imageMime=c.image.mime||'image/*';imageName=c.image.name||'imagem';byId('imgThumb').src=imageB64;byId('imgName').textContent=imageName;byId('imgArea').classList.remove('hidden');byId('imgDrop').classList.add('hidden');byId('prevImg').src=imageB64;byId('prevImg').classList.remove('hidden')}else{imageB64=null;imageMime=null;imageName='';byId('imgArea').classList.add('hidden');byId('imgDrop').classList.remove('hidden');byId('prevImg').classList.add('hidden')}
   if(contacts.length)renderTbl();else{byId('tblA').classList.add('hidden');byId('tb').innerHTML=''}
   updPrev();saveCur();renderCampaigns();refreshUI();loadDash();toast('Campanha ativa: '+c.name);
 }
@@ -811,7 +823,7 @@ function getSessions(){try{return JSON.parse(localStorage.getItem('zf_sess')||'[
 function putSessions(a){try{localStorage.setItem('zf_sess',JSON.stringify(a.slice(0,30)))}catch(x){}}
 function saveCur(){
   try{
-    localStorage.setItem('zf_cur',JSON.stringify({sid,contacts,campId:activeCampId}));
+    localStorage.setItem('zf_cur',JSON.stringify({sid,contacts,campId:activeCampId,message:byId('tpl')?.value||'',link:byId('lnk')?.value||'',image:{data:imageB64||null,mime:imageMime||null,name:imageName||''}}));
     syncActiveCampaign();
     if(sid&&contacts.some(c=>c.status!=='pending')){
       const all=getSessions(),i=all.findIndex(x=>x.sid===sid);
@@ -830,7 +842,7 @@ function restoreCur(){
   try{
     const o=JSON.parse(localStorage.getItem('zf_cur')||'null');
     if(o&&Array.isArray(o.contacts)&&o.contacts.length){
-      if(o.campId)activeCampId=String(o.campId);contacts=o.contacts;sid=o.sid||Date.now();renderTbl();updPrev();
+      if(o.campId)activeCampId=String(o.campId);contacts=o.contacts;sid=o.sid||Date.now();if(o.message!=null)byId('tpl').value=o.message;if(o.link!=null)byId('lnk').value=o.link;if(o.image&&o.image.data){imageB64=o.image.data;imageMime=o.image.mime||'image/*';imageName=o.image.name||'imagem';byId('imgThumb').src=imageB64;byId('imgName').textContent=imageName;byId('imgArea').classList.remove('hidden');byId('imgDrop').classList.add('hidden');byId('prevImg').src=imageB64;byId('prevImg').classList.remove('hidden')}renderTbl();updPrev();
       if(contacts.some(c=>c.status!=='pending'))toast('Lista anterior restaurada ('+contacts.length+' contatos)');
     }
   }catch(x){}
@@ -1172,7 +1184,7 @@ testApi=async function(){
   el.innerHTML=r.ok?'<div class="info-b ok"><strong>Conectado!</strong> O WhatsApp está ligado e pronto para enviar.</div>':'<div class="info-b er"><strong>Não consegui conectar.</strong> '+r.msg+'</div>';
 };
 (function(){
-  ['tpl','lnk','minD','maxD','lim'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('input',refreshUI)});
+  ['tpl','lnk','minD','maxD','lim'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('input',()=>{refreshUI();if(typeof debounceSave==='function')debounceSave()})});
   ['apiUrl','apiInstance','apiKey','shortKey','shortDomain','shortProxy'].forEach(id=>{const e=byId(id);if(e)e.addEventListener('change',()=>{saveCfg();if(id.startsWith('api'))checkConn()})});
   const bd=document.querySelector('.hdr-badge');
   if(bd){bd.title='Clique para conferir a conexão com o WhatsApp';bd.onclick=async()=>{const r=await checkConn();toast(r.ok?'WhatsApp conectado':'WhatsApp desconectado',r.ok?'':'err')}}
