@@ -700,7 +700,7 @@ async function testShort(){
 
 async function refreshClicks(){
   const comLink=contacts.filter(c=>c.shortId);
-  if(!comLink.length){toast('Nenhum contato com link curto neste envio');return}
+  if(!comLink.length){return false}
   let updated=0,falhas=0;
   for(const c of comLink){
     try{
@@ -719,6 +719,7 @@ async function refreshClicks(){
   if(falhas===comLink.length)toast('Não consegui ler os cliques. O proxy (porta 8081) está rodando?','err');
   else if(updated>0)toast(updated+' cliques detectados');
   else toast('Nenhum clique novo detectado');
+  return true;
 }
 
 // Override buildMsg to use short links
@@ -948,7 +949,7 @@ refreshClicks=async function(){
 };
 async function refreshAllInfo(){
   const b=byId('refreshAllBtn');if(b)b.disabled=true;
-  try{await refreshStatus();await refreshClicks();renderRpt();}
+  try{await refreshStatus();const hasShortLinks=RC().some(c=>clickLinkId(c));if(hasShortLinks)await refreshClicks();else toast('Informações atualizadas. Este envio não possui links curtos para consultar.');renderRpt();}
   finally{if(b)b.disabled=false}
 }
 
